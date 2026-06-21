@@ -1,6 +1,7 @@
 import { getBusinessListingCategories } from '@/src/api/businessService';
 import Link from 'next/link';
 import { ArrowLeft, Utensils } from 'lucide-react';
+import { getCategoryUrl } from '../../lib/utils';
 
 export default async function AllCategories() {
   const categories = await getBusinessListingCategories().catch(() => []);
@@ -26,7 +27,7 @@ export default async function AllCategories() {
           {categories.map((category) => (
             <Link
               key={category.id}
-              href={`/kategori/${category.id}`}
+              href={getCategoryUrl(category)}
               className="group flex flex-col items-center gap-3 p-6 rounded-2xl bg-white border border-gray-100 hover:border-[#FF4D00]/30 hover:shadow-lg transition-all text-center"
             >
               <div className="w-16 h-16 rounded-full bg-[#FF4D00]/10 flex items-center justify-center text-2xl text-[#FF4D00] group-hover:bg-[#FF4D00] group-hover:text-white transition-all">

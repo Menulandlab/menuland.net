@@ -2,7 +2,7 @@ import { getBusinesses, getBusinessListingCategories } from '@/src/api/businessS
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Search, Star, MapPin, Utensils, Compass } from 'lucide-react';
-import { getBusinessUrl } from '../lib/utils';
+import { getBusinessUrl, getCategoryUrl } from '../lib/utils';
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -72,7 +72,7 @@ export default async function Home() {
             {categories.slice(0, 10).map((category) => (
               <Link
                 key={category.id}
-                href={`/kategori/${category.id}`}
+                href={getCategoryUrl(category)}
                 className="group flex flex-col items-center gap-3 p-4 rounded-2xl bg-white border border-gray-100 hover:border-[#FF4D00]/30 hover:shadow-lg transition-all text-center"
               >
                 <div className="w-12 h-12 rounded-full bg-[#FF4D00]/10 flex items-center justify-center text-xl text-[#FF4D00] group-hover:bg-[#FF4D00] group-hover:text-white transition-all">

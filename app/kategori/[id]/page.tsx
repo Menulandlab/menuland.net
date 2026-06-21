@@ -2,14 +2,28 @@ import { getBusinesses, getBusinessListingCategories } from '@/src/api/businessS
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Star, MapPin, Compass, ArrowLeft, Utensils } from 'lucide-react';
-import { getBusinessUrl } from '../../../lib/utils';
+import { getBusinessUrl, extractIdFromSlug } from '../../../lib/utils';
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+export async function generateMetadata({ params }: PageProps) {
+  const { id: urlParam } = await params;
+  const id = extractIdFromSlug(urlParam);
+  const categories = await getBusinessListingCategories().catch(() => []);
+  const activeCategory = categories.find(c => String(c.id) === id);
+  const categoryName = activeCategory?.name || 'Mekanlar';
+  
+  return {
+    title: `${categoryName} Menüleri ve Fiyatları | Menuland`,
+    description: `En popüler ${categoryName} mekanlarının güncel dijital menülerini, fiyatlarını, adres ve telefon bilgilerini Menuland'de inceleyin.`,
+  };
+}
+
 export default async function CategoryPage({ params }: PageProps) {
-  const { id } = await params;
+  const { id: urlParam } = await params;
+  const id = extractIdFromSlug(urlParam);
   
   const cookieStore = await cookies();
   const cityId = cookieStore.get('selectedCityId')?.value || null;
@@ -20,6 +34,7 @@ export default async function CategoryPage({ params }: PageProps) {
   // Tüm kategorileri çekerek mevcut kategori adını öğrenelim
   const categories = await getBusinessListingCategories().catch(() => []);
   const activeCategory = categories.find(c => String(c.id) === id);
+  const categoryName = activeCategory?.name || 'Mekanlar';
 
   // Filtreleme parametrelerini ayarla
   const businessParams: any = { category_id: Number(id), limit: 24 };
@@ -28,6 +43,9 @@ export default async function CategoryPage({ params }: PageProps) {
 
   // Seçili kategoriye ve konuma özel işletmeleri çek
   const businesses = await getBusinesses(businessParams).catch(() => []);
+
+  // SEO için açıklama metni oluştur
+  const seoDescription = `En popüler ${categoryName} mekanlarının güncel dijital menüleri ve yemek fiyatları Menuland'de. ${cityName ? `${cityName} (${districtName || 'tüm ilçeler'}) bölgesindeki` : 'Tüm Türkiye genelindeki'} en iyi restoranları, kafeleri ve yemek noktalarını hemen keşfedin, fiyat listelerini karşılaştırın.`;
 
   return (
     <div className="flex flex-col gap-8 py-4">
@@ -39,16 +57,19 @@ export default async function CategoryPage({ params }: PageProps) {
       </div>
 
       {/* Page Title & Location Info */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3 bg-gradient-to-r from-zinc-50 to-transparent p-6 rounded-3xl border border-gray-150/40">
         <h1 className="text-3xl font-black text-zinc-900 tracking-tight flex items-center gap-2">
           <Utensils className="h-8 w-8 text-[#FF4D00]" />
-          {activeCategory?.name || 'Mekanlar'}
+          {categoryName}
         </h1>
-        <p className="text-sm text-zinc-500 flex items-center gap-1">
+        <p className="text-sm text-zinc-650 leading-relaxed max-w-3xl">
+          {seoDescription}
+        </p>
+        <p className="text-xs text-zinc-450 flex items-center gap-1 mt-1 border-t border-zinc-100 pt-3">
           {cityName ? (
             <>
-              <MapPin className="h-4 w-4 text-[#FF4D00]" />
-              Şu anda <span className="font-bold text-zinc-800">{districtName ? `${districtName}, ` : ''}{cityName}</span> bölgesindeki sonuçları görüntülüyorsunuz.
+              <MapPin className="h-3.5 w-3.5 text-[#FF4D00]" />
+              Şu anda <span className="font-bold text-zinc-700">{districtName ? `${districtName}, ` : ''}{cityName}</span> bölgesindeki sonuçları görüntülüyorsunuz.
             </>
           ) : (
             'Tüm bölgelerdeki sonuçlar listelenmektedir.'

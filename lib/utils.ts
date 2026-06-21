@@ -44,3 +44,11 @@ export function extractIdFromSlug(slugOrId: string): string {
   const parts = slugOrId.split('-');
   return parts[parts.length - 1]; // Son parça ID'dir
 }
+
+/**
+ * Kategori için SEO dostu URL üretir.
+ */
+export function getCategoryUrl(cat: { id: number; name: string }) {
+  const nameSlug = slugify(cat.name || 'kategori');
+  return `/kategori/${nameSlug}-${cat.id}`;
+}
