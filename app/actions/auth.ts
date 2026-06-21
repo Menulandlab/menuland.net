@@ -1,7 +1,8 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import axios from 'axios';
+import { publicApiClient } from '@/src/api/client';
+import { createReservation, getUserReservations, cancelReservation } from '@/src/api/reservationService';
 import { User } from '@/src/context/AuthContext';
 
 const BASE_URL = 'https://api.service.menuland.net';
@@ -14,7 +15,7 @@ export interface SessionData {
 // Giriş işlemi
 export async function loginAction(username: string, password: string) {
   try {
-    const response = await axios.post(`${BASE_URL}/auth/login`, { username, password });
+    const response = await publicApiClient.post('/auth/login', { username, password });
 
     if (response.data && response.data.success) {
       const { token, user } = response.data.data;
@@ -59,7 +60,7 @@ export async function loginAction(username: string, password: string) {
 // Google ile Giriş işlemi
 export async function loginWithGoogleAction(googleToken: string) {
   try {
-    const response = await axios.post(`${BASE_URL}/auth/google`, { token: googleToken });
+    const response = await publicApiClient.post('/auth/google', { token: googleToken });
 
     if (response.data && response.data.success) {
       const { token, user } = response.data.data;
@@ -115,8 +116,6 @@ export async function getSessionAction(): Promise<SessionData> {
   }
 
   try {
-    // Backend API'ye token doğrulaması için ufak bir istek atılabilir
-    // Veya sadece çerezdeki datayı dönebiliriz. Güvenlik için token kontrol edelim:
     const parsedUser = JSON.parse(userStr) as User;
     return { user: parsedUser, isAuthenticated: true };
   } catch {
@@ -127,7 +126,7 @@ export async function getSessionAction(): Promise<SessionData> {
 // Bireysel kayıt işlemi
 export async function registerAction(name: string, email: string, username: string, password: string) {
   try {
-    const response = await axios.post(`${BASE_URL}/register/user`, {
+    const response = await publicApiClient.post('/register/user', {
       name,
       email,
       username,
@@ -157,25 +156,15 @@ export async function createReservationAction(data: {
   user_id?: number;
 }) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('authToken')?.value;
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    const res = await createReservation(data);
+    if (res.success) {
+      return { success: true, message: res.message || 'Rezervasyonunuz başarıyla alındı.' };
     }
-
-    const response = await axios.post(`${BASE_URL}/reservation/create`, data, { headers });
-
-    if (response.data && response.data.success) {
-      return { success: true, message: response.data.message || 'Rezervasyonunuz başarıyla alındı.' };
-    }
-    return { success: false, message: response.data.message || 'Rezervasyon oluşturulamadı.' };
+    return { success: false, message: res.message || 'Rezervasyon oluşturulamadı.' };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.message || 'Rezervasyon oluşturulurken bir hata oluştu.'
+      message: error.message || 'Rezervasyon oluşturulurken bir hata oluştu.'
     };
   }
 }
@@ -184,36 +173,27 @@ export async function createReservationAction(data: {
 export async function getUserReservationsAction(limit = 50) {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('authToken')?.value;
     const userStr = cookieStore.get('authUser')?.value;
 
-    if (!token || !userStr) {
+    if (!userStr) {
       return { success: false, message: 'Oturum bulunamadı.', data: [], total: 0 };
     }
 
     const user = JSON.parse(userStr) as User;
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    };
+    const res = await getUserReservations(user.id, limit);
 
-    const response = await axios.get(`${BASE_URL}/user/${user.id}/reservations`, {
-      headers,
-      params: { limit }
-    });
-
-    if (response.data && response.data.success) {
+    if (res.success) {
       return {
         success: true,
-        data: response.data.data || [],
-        total: response.data.total || 0
+        data: res.data || [],
+        total: res.total || 0
       };
     }
     return { success: false, message: 'Rezervasyonlar alınamadı.', data: [], total: 0 };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.message || 'Rezervasyonlar yüklenirken hata oluştu.',
+      message: error.message || 'Rezervasyonlar yüklenirken hata oluştu.',
       data: [],
       total: 0
     };
@@ -224,33 +204,23 @@ export async function getUserReservationsAction(limit = 50) {
 export async function cancelReservationAction(reservationId: number) {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('authToken')?.value;
     const userStr = cookieStore.get('authUser')?.value;
 
-    if (!token || !userStr) {
+    if (!userStr) {
       return { success: false, message: 'Oturum bulunamadı.' };
     }
 
     const user = JSON.parse(userStr) as User;
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    };
+    const res = await cancelReservation(reservationId, user.id);
 
-    const response = await axios.put(
-      `${BASE_URL}/reservation/${reservationId}/cancel`,
-      { user_id: user.id },
-      { headers }
-    );
-
-    if (response.data && response.data.success) {
-      return { success: true, message: response.data.message || 'Rezervasyon iptal edildi.' };
+    if (res.success) {
+      return { success: true, message: res.message || 'Rezervasyon iptal edildi.' };
     }
-    return { success: false, message: response.data.message || 'Rezervasyon iptal edilemedi.' };
+    return { success: false, message: res.message || 'Rezervasyon iptal edilemedi.' };
   } catch (error: any) {
     return {
       success: false,
-      message: error.response?.data?.message || 'İptal işlemi sırasında hata oluştu.'
+      message: error.message || 'İptal işlemi sırasında hata oluştu.'
     };
   }
 }
