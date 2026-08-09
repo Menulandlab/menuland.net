@@ -1,0 +1,264 @@
+'use client';
+
+import React, { useState, Suspense, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import Script from 'next/script';
+import { Eye, EyeOff, Lock, User, AlertCircle, Sparkles } from 'lucide-react';
+
+const GOOGLE_CLIENT_ID = '956589611008-ftqqljp9fo186apcmsrguommeaftf5eg.apps.googleusercontent.com';
+
+function LoginForm() {
+  const { login, loginWithGoogle, isAuthenticated } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
+
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Eğer zaten giriş yapılmışsa yönlendir
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push(redirectTo);
+    }
+  }, [isAuthenticated, router, redirectTo]);
+
+  const handleGoogleCallback = async (response: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await loginWithGoogle(response.credential);
+      if (res.success) {
+        router.push(redirectTo);
+        router.refresh();
+      } else {
+        setError(res.message || 'Google ile giriş başarısız.');
+      }
+    } catch (err) {
+      setError('Google ile bağlanırken bir hata oluştu.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const initGoogleSignIn = () => {
+    if (typeof window !== 'undefined' && (window as any).google) {
+      try {
+        (window as any).google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCallback,
+          cancel_on_tap_outside: true,
+        });
+        
+        const googleBtnDiv = document.getElementById('google-signin-btn-container');
+        if (googleBtnDiv) {
+          (window as any).google.accounts.id.renderButton(
+            googleBtnDiv,
+            { 
+              theme: 'outline', 
+              size: 'large', 
+              width: 240, 
+              shape: 'pill',
+              text: 'continue_with'
+            }
+          );
+        }
+      } catch (err) {
+        console.error('Google Sign-In initialization failed:', err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).google) {
+      initGoogleSignIn();
+    }
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim() || !password.trim()) {
+      setError('Lütfen kullanıcı adı/e-posta ve şifrenizi girin.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await login(username.trim(), password.trim());
+      if (res.success) {
+        router.push(redirectTo);
+        router.refresh();
+      } else {
+        setError(res.message || 'Kullanıcı adı veya şifre hatalı.');
+      }
+    } catch (err) {
+      setError('Bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-md bg-white rounded-3xl border border-gray-100 p-8 shadow-xl relative overflow-hidden">
+      <Script 
+        src="https://accounts.google.com/gsi/client" 
+        strategy="afterInteractive"
+        onLoad={initGoogleSignIn}
+      />
+
+      {/* Background decorations */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF4D00]/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#FF4D00]/5 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />
+
+      {/* Header */}
+      <div className="flex flex-col items-center mb-8">
+        <Link href="/" className="flex items-center group relative mb-4">
+          <Image
+            src="/images/menuland-600x200.png"
+            alt="Menuland Logo"
+            width={160}
+            height={53}
+            priority
+            className="object-contain"
+          />
+          <span className="absolute -top-1 -right-8 text-[8px] font-black tracking-widest text-[#FF4D00]/85 select-none bg-orange-50 px-1.5 py-0.5 rounded-full">
+            BETA
+          </span>
+        </Link>
+        <h1 className="text-2xl font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
+          Giriş Yap <Sparkles className="h-5 w-5 text-[#FF4D00]" />
+        </h1>
+        <p className="text-xs text-zinc-500 mt-1.5 text-center">
+          Rezervasyon yapmak ve lezzetleri keşfetmek için hesabınıza bağlanın.
+        </p>
+      </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-150 rounded-2xl flex items-start gap-2.5 text-xs font-semibold text-red-700">
+          <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Username */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-zinc-650" htmlFor="username">
+            Kullanıcı Adı veya E-posta
+          </label>
+          <div className="relative">
+            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+              <User className="h-4 w-4 text-zinc-400" />
+            </span>
+            <input
+              id="username"
+              type="text"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="kullanıcı adı veya e-posta adresi"
+              disabled={loading}
+              className="w-full bg-zinc-50 border border-gray-200 rounded-2xl py-3 pl-11 pr-4 text-sm text-zinc-900 placeholder-zinc-450 focus:bg-white focus:border-[#FF4D00] focus:ring-1 focus:ring-[#FF4D00] focus:outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Password */}
+        <div className="space-y-1.5">
+          <div className="flex justify-between items-center">
+            <label className="text-xs font-bold text-zinc-650" htmlFor="password">
+              Şifre
+            </label>
+          </div>
+          <div className="relative">
+            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+              <Lock className="h-4 w-4 text-zinc-400" />
+            </span>
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              disabled={loading}
+              className="w-full bg-zinc-50 border border-gray-200 rounded-2xl py-3 pl-11 pr-11 text-sm text-zinc-900 placeholder-zinc-450 focus:bg-white focus:border-[#FF4D00] focus:ring-1 focus:ring-[#FF4D00] focus:outline-none transition-all"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              disabled={loading}
+              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-605"
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-[#FF4D00] hover:bg-[#e04300] disabled:bg-zinc-350 text-white font-black text-sm py-3.5 rounded-2xl shadow-lg shadow-[#FF4D00]/15 hover:shadow-[#FF4D00]/25 transition-all flex justify-center items-center gap-2 cursor-pointer"
+        >
+          {loading ? (
+            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            'Giriş Yap'
+          )}
+        </button>
+      </form>
+
+      {/* Social logins */}
+      <div className="mt-8 pt-6 border-t border-gray-100">
+        <div className="relative flex justify-center text-xs font-bold uppercase tracking-wider text-zinc-400 mb-5">
+          <span className="bg-white px-3 z-10">Sosyal Hesaplar ile Bağlan</span>
+        </div>
+
+        <div className="space-y-3 flex flex-col items-center">
+          {/* Google Sign-in Container */}
+          <div id="google-signin-btn-container" className="w-[240px] h-[40px] flex justify-center" />
+
+           {/* Apple placeholder */}
+          <button
+            type="button"
+            onClick={() => alert('Apple ile Giriş yakında web sitemizde de aktif olacaktır. Lütfen Google ile giriş yapın veya şifrenizi kullanın.')}
+            className="w-[240px] flex items-center justify-center gap-2 bg-black border border-black rounded-full h-[40px] text-xs font-bold text-white hover:bg-zinc-850 transition-all cursor-pointer"
+          >
+            <svg className="h-4 w-4 fill-white" viewBox="0 0 24 24">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.82M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.17.67-2.88 1.49-.6.69-1.12 1.84-.98 2.94 1.1.09 2.21-.56 2.87-1.37z" />
+            </svg>
+            Apple ile Giriş (Yakında)
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-8 text-center">
+        <p className="text-xs text-zinc-500 font-semibold">
+          Hesabınız yok mu?{' '}
+          <Link href={`/register${redirectTo !== '/' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[#FF4D00] hover:underline font-bold">
+            Kayıt Olun
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <div className="min-h-[70vh] flex items-center justify-center py-10">
+      <Suspense fallback={<div className="text-zinc-500 text-sm font-semibold">Yükleniyor...</div>}>
+        <LoginForm />
+      </Suspense>
+    </div>
+  );
+}

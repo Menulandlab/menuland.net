@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background-color: #ffffff !important;
+  color: #171717 !important;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* ===== MOBİL DOKUNMA İYİLEŞTİRMELERİ ===== */
+/* iOS Safari / Chrome 300ms gecikmeyi ve gri flash'ı kaldırır */
+button,
+a,
+[role="button"],
+select,
+input,
+textarea,
+label {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tüm butonlar cursor: pointer alsın */
+button {
+  cursor: pointer;
+}
+
+/* iOS'ta onClick div'lerin çalışması için (cursor: pointer şart) */
+[onClick],
+[onclick] {
+  cursor: pointer;
+}
+
+/* Seçim engelleme (Sadece üretim ortamında protected-mode etkinken) */
+body.protected-mode {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* iOS Safari user-select bug fix for interactive elements */
+body.protected-mode button,
+body.protected-mode a,
+body.protected-mode select,
+body.protected-mode input,
+body.protected-mode textarea,
+body.protected-mode [role="button"] {
+  user-select: text !important;
+  -webkit-user-select: auto !important;
+}
+
+/* Görsellerin sürüklenmesini ve sağ tıkla kaydedilmesini zorlaştırma */
+body.protected-mode img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  pointer-events: none; /* Tıklamayı da engellemek için */
+}
+
+/* Paylaşım vb. butonların tıklanabilir kalması için pointer-events sıfırlama */
+body.protected-mode button img, body.protected-mode a img {
+  pointer-events: auto;
+}
+
+/* ===== NATIVE DIALOG STİLLERİ ===== */
+/* Tarayıcı varsayılan dialog stillerini sıfırla ve merkeze al */
+dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  border: none;
+  padding: 0;
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: white;
+  -webkit-overflow-scrolling: touch;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Dialog açıkken scroll'u engelle */
+body:has(dialog[open]) {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
