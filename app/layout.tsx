@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 import ProtectionProvider from "../components/ProtectionProvider";
 import { LocationProvider } from "../context/LocationContext";
 import { GoogleAnalytics } from '@next/third-parties/google';
+import Script from 'next/script';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,6 +44,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-white text-zinc-900">
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3776725197972523"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <ProtectionProvider>
           <AuthProvider>
             <LocationProvider>
