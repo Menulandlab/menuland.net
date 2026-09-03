@@ -7,6 +7,7 @@ import Image from 'next/image';
 import BusinessGallery from '../../../components/BusinessGallery';
 import { Star, MapPin, Phone, Globe, Calendar, Tag, ShieldCheck, Heart, Share2, AlertTriangle, AlertCircle, ShoppingBag, Utensils, Compass } from 'lucide-react';
 import { extractIdFromSlug } from '../../../lib/utils';
+import AdSenseBanner from '@/components/AdSenseBanner';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -153,6 +154,11 @@ export default async function BusinessDetail({ params }: PageProps) {
               businessSlug={urlParam}
             />
           )}
+
+          {/* Sidebar Sponsorlu Reklam Alanı */}
+          <div className="w-full">
+            <AdSenseBanner format="rectangle" />
+          </div>
         </div>
 
         {/* Menu & Details (Left col on desktop, second on mobile) */}
@@ -259,6 +265,11 @@ export default async function BusinessDetail({ params }: PageProps) {
               </div>
             )}
           </section>
+
+          {/* Menü Altı / Yorumlar Üstü Sponsorlu Reklam */}
+          <div className="w-full -my-2">
+            <AdSenseBanner format="horizontal" />
+          </div>
 
           {/* Comments Section */}
           <section className="rounded-3xl border border-gray-100 bg-white p-6 sm:p-8 flex flex-col gap-6">

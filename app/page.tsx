@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Search, Star, MapPin, Utensils, Compass } from 'lucide-react';
 import { getBusinessUrl, getCategoryUrl } from '../lib/utils';
+import AdSenseBanner from '@/components/AdSenseBanner';
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -60,6 +61,11 @@ export default async function Home() {
           </form>
         </div>
       </section>
+
+      {/* Hero Altı Sponsorlu Reklam Alanı */}
+      <div className="max-w-4xl mx-auto w-full -my-6">
+        <AdSenseBanner format="horizontal" />
+      </div>
 
       {/* Categories */}
       {categories.length > 0 && (
@@ -153,6 +159,11 @@ export default async function Home() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* Sayfa Altı Geniş Sponsorlu Reklam */}
+      <section className="w-full">
+        <AdSenseBanner format="auto" />
       </section>
 
     </div>
