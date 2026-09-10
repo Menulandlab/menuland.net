@@ -40,12 +40,33 @@ export default function PrivacyPage() {
         <section className="flex flex-col gap-2">
           <h2 className="text-lg font-bold text-zinc-950 border-b border-gray-100 pb-2">3. Üçüncü Şahıslarla Paylaşım Yasağı</h2>
           <p className="font-bold text-zinc-900 border-l-4 border-emerald-500 pl-4 py-1 bg-emerald-50/50 rounded-r-xl">
-            MLD Yazılım, kullanıcılarının kişisel bilgilerini, e-posta adreslerini, konum verilerini veya kullanım alışkanlıklarını hiçbir koşul altında reklam verenler, veri simsarları veya üçüncü şahıslarla satmaz, kiralamaz veya ticari amaçla paylaşmaz. Verileriniz yalnızca yasal mercilerin resmi kararları doğrultusunda ilgili mevzuat sınırları dahilinde paylaşılabilir.
+            MLD Yazılım, kullanıcılarının doğrudan kişisel kimlik bilgilerini (ad, soyad, telefon vb.) hiçbir koşul altında veri simsarları veya yetkisiz üçüncü şahıslarla satmaz, kiralamaz veya ticari amaçla paylaşmaz. Verileriniz yalnızca yasal mercilerin resmi kararları doğrultusunda mevzuat sınırları dahilinde paylaşılabilir.
           </p>
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-bold text-zinc-950 border-b border-gray-100 pb-2">4. Veri Güvenliği ve Altyapı</h2>
+          <h2 className="text-lg font-bold text-zinc-950 border-b border-gray-100 pb-2">4. Google AdSense ve Çerez (Cookie) Politikası</h2>
+          <p>
+            Platformumuzda (web sitemizde), ziyaretçilerimize ücretsiz ve kesintisiz hizmet sunabilmek amacıyla <strong>Google AdSense</strong> reklam ağı kullanılmaktadır. Bu kapsamda:
+          </p>
+          <ul className="list-disc pl-5 space-y-2">
+            <li>
+              Google dahil üçüncü taraf satıcılar, kullanıcıların web sitemize veya internetteki diğer web sitelerine daha önce yaptıkları ziyaretlere dayalı olarak reklam yayınlamak için çerezlerden (cookies) yararlanır.
+            </li>
+            <li>
+              Google'ın reklam çerezlerini kullanması, Google ve iş ortaklarının kullanıcılarımıza sitemize ve/veya internetteki diğer sitelere yaptıkları ziyaretlere dayalı olarak reklamlar sunmasına olanak tanır.
+            </li>
+            <li>
+              Kullanıcılar, <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-[#FF4D00] font-semibold underline">Google Reklam Ayarları</a> sayfasını ziyaret ederek kişiselleştirilmiş reklamcılık için çerez kullanımını devre dışı bırakabilirler.
+            </li>
+            <li>
+              Alternatif olarak kullanıcılar, üçüncü taraf satıcıların kişiselleştirilmiş reklamcılık için çerez kullanımını <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-[#FF4D00] font-semibold underline">aboutads.info</a> adresini ziyaret ederek devre dışı bırakabilirler.
+            </li>
+          </ul>
+        </section>
+
+        <section className="flex flex-col gap-2">
+          <h2 className="text-lg font-bold text-zinc-950 border-b border-gray-100 pb-2">5. Veri Güvenliği ve Altyapı</h2>
           <p>
             Sistemlerimiz, veri sızıntılarını ve yetkisiz müdahaleleri önlemek amacıyla güvenlik duvarları (firewalls), SSL/TLS şifreleme protokolleri ve düzenli güvenlik denetimleri ile korunmaktadır. Ziyaretçi güvenliği bizim için en üst düzey yasal önceliktir.
           </p>

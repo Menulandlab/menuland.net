@@ -28,8 +28,11 @@ export default function Footer() {
 
           {/* Links */}
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900">Kurumsal</h3>
+            <h3 className="text-sm font-semibold text-zinc-900">Kurumsal & Keşif</h3>
             <ul className="mt-4 space-y-2 text-sm text-zinc-650">
+              <li><Link href="/blog" className="hover:text-[#FF4D00] transition-colors font-medium text-zinc-800">Lezzet Rehberi & Blog</Link></li>
+              <li><Link href="/kesfet" className="hover:text-[#FF4D00] transition-colors">Şehri Keşfet</Link></li>
+              <li><Link href="/all-businesses" className="hover:text-[#FF4D00] transition-colors">Tüm Mekanlar</Link></li>
               <li><Link href="/hakkimizda" className="hover:text-[#FF4D00] transition-colors">Hakkımızda</Link></li>
               <li><Link href="/kullanim-kosullari" className="hover:text-[#FF4D00] transition-colors">Kullanım Koşulları</Link></li>
               <li><Link href="/gizlilik-politikasi" className="hover:text-[#FF4D00] transition-colors">Gizlilik Politikası</Link></li>

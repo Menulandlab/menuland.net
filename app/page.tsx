@@ -1,8 +1,9 @@
 import { getBusinesses, getBusinessListingCategories } from '@/src/api/businessService';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { Search, Star, MapPin, Utensils, Compass } from 'lucide-react';
+import { Search, Star, MapPin, Utensils, Compass, BookOpen, ArrowRight } from 'lucide-react';
 import { getBusinessUrl, getCategoryUrl } from '../lib/utils';
+import { blogPosts } from '@/src/data/blog-posts';
 import AdSenseBanner from '@/components/AdSenseBanner';
 
 export default async function Home() {
@@ -159,6 +160,60 @@ export default async function Home() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* Lezzet & Şehir Rehberi Bölümü (AdSense Kalite & SEO İçeriği) */}
+      <section className="flex flex-col gap-6 pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-[#FF4D00]" /> Lezzet & Şehir Rehberi
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-500">
+              Gastronomi dünyasından trendler, şehir rehberleri ve dijital menü ipuçları.
+            </p>
+          </div>
+          <Link href="/blog" className="text-sm font-semibold text-[#FF4D00] hover:underline flex items-center gap-1">
+            Tümünü Oku <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {blogPosts.slice(0, 3).map((post) => (
+            <Link
+              key={post.slug}
+              href={`/blog/${post.slug}`}
+              className="group flex flex-col bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all"
+            >
+              <div className="relative h-44 w-full bg-zinc-100 overflow-hidden">
+                <img
+                  src={post.image}
+                  alt={post.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-xs text-zinc-900 text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-xs">
+                  {post.category}
+                </span>
+              </div>
+              <div className="p-4 flex flex-col gap-2 flex-1 justify-between">
+                <div className="flex flex-col gap-1.5">
+                  <h3 className="text-base font-bold text-zinc-900 group-hover:text-[#FF4D00] transition-colors line-clamp-2">
+                    {post.title}
+                  </h3>
+                  <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed">
+                    {post.excerpt}
+                  </p>
+                </div>
+                <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-[#FF4D00] font-semibold">
+                  <span>{post.readTime} okuma</span>
+                  <span className="flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
+                    Devamını Oku →
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </section>
 
       {/* Sayfa Altı Geniş Sponsorlu Reklam */}
