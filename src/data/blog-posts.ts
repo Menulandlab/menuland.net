@@ -303,5 +303,76 @@ export const blogPosts: BlogPost[] = [
       <h2>Uygulama İndirme Zorunluluğu Olmadan Erişim</h2>
       <p>Müşteri memnuniyetini en üst düzeye çıkaran en kritik faktör, QR kodu okutan misafirin herhangi bir mobil uygulama indirmek zorunda kalmadan doğrudan tarayıcı üzerinden menüye erişebilmesidir. Hızlı, hafif ve şeffaf bir arayüz, dijital dönüşümün başarısını belirler.</p>
     `
+  },
+  {
+    slug: "ordunun-cografi-isaretli-tescilli-24-lezzeti-ve-yemek-kulturu",
+    title: "Ordu’nun Tescilli Mirası: Coğrafi İşaretli 24 Eşsiz Lezzet ve Gastronomi Rehberi",
+    excerpt: "Akkuş fasulyesinden Ordu pidesine, Galdirik kavurmasından Yalıköy köftesine kadar Türk Patent ve Marka Kurumu tarafından tescillenen Ordu'nun 24 coğrafi işaretli lezzetini keşfedin.",
+    author: "Menuland Gastronomi Kurulu",
+    date: "2026-09-01T10:00:00+03:00",
+    image: "/img/blog/ordu-plajlari.jpg",
+    category: "Gastronomi & Kültür",
+    readTime: "12 dk",
+    content: `
+      <p>Yeşilin binbir tonuyla Karadeniz'in hırçın dalgalarının buluştuğu Ordu, sadece büyüleyici yaylaları ve sonsuz sahil şeridiyle değil; yüzyılların birikimini tabağa taşıyan köklü mutfak kültürüyle de Türkiye’nin parlayan gastronomi yıldızlarından biridir. Doğu Karadeniz'in bereketli toprakları, dağlarından toplanan şifalı endemik otları, derelerinden ve denizinden gelen taze balıkları ve elbette fındığın başkenti unvanıyla Ordu mutfağı, Türk Patent ve Marka Kurumu (TÜRKPATENT) tarafından tescillenen <strong>tam 24 adet coğrafi işaretli ürüne</strong> ev sahipliği yapmaktadır.</p>
+      
+      <p>Coğrafi işaret tescili, bir lezzetin yalnızca o yöreye ait olduğunu, geleneksel reçetesine sadık kalınarak hazırlandığını ve benzersiz lezzetini o coğrafyanın mikro-klimasından aldığını hukuki olarak kanıtlar. İşte Türk Patent verilerine göre tescil altına alınan, Ordu’ya gittiğinizde mutlaka tatmanız gereken 24 coğrafi işaretli lezzet şöleni:</p>
+
+      <h2>1. Fırınlardan Yükselen Efsaneler: Pideler, Tostlar ve Köfteler</h2>
+      <p>Ordu sokaklarında yürürken burnunuza gelen taş fırın kokuları, kentin hamur işi ve et konusundaki ustalığının en net kanıtıdır.</p>
+      <ul>
+        <li><strong>Ordu Pidesi / Ordu Yağlısı (Tescil: 2023):</strong> İncecik açılan çıtır hamuru, ortasında eriyen enfes yöresel peyniri veya taze kıyması ve fırından çıkar çıkmaz üzerine kırılan yumurtasıyla meşhurdur. Kenarları koparılıp ortasındaki akışkan tereyağına banılarak yenmesi adettendir.</li>
+        <li><strong>Ordu Tostu (Tescil: 2021):</strong> Özel fırınlarda hazırlanan büyük boy tost ekmeği, dana sucuğu andıran özel ezme tost sucuğu ve eriyen kaşar peyniriyle preslenerek hazırlanır. Dışı çıtır, içi dolgun bu tost kentin en sevilen sokak lezzetidir.</li>
+        <li><strong>Yalıköy Köftesi (Tescil: 2022):</strong> Fatsa Yalıköy beldesinden doğan bu efsanevi köfte; dana ve kuzu etinin dengeli karışımı, taze soğan ve özel baharatlarla yoğrularak meşe kömürü ızgarasında pişirilir. Suyunu içinde hapseden yumuşacık dokusuyla damaklarda iz bırakır.</li>
+        <li><strong>Ordu İçli Tava (Tescil: 2023):</strong> Karadeniz hamsisinin mısır unu, pirinç, soğan, fıstık, kuş üzümü ve taze otlarla buluştuğu fırın yemeğidir. Hamsilerin bir tava içine çiçek gibi dizilip içinin zengin pilavla doldurulmasıyla pişirilir.</li>
+        <li><strong>Mesudiye Kuru Ekmeği / Mesudiye Goliti (Tescil: 2022):</strong> Yüksek rakımlı Mesudiye yaylalarında üretilen, taş fırınlarda kurutularak aylarca bayatlamadan saklanabilen tarihi bir yol ekmeğidir. Çorbaya doğranarak veya sıcak süte/çaya batırılarak tüketilir.</li>
+      </ul>
+
+      <h2>2. Dağların Şifası: Yöresel Otlar ve Meşhur Kavurmalar</h2>
+      <p>Ordu mutfağının en ayırt edici özelliği, ilkbaharda yaylalardan ve orman eteklerinden toplanan yabani otların tereyağı ve yumurtayla kavrulmasıdır. Dünyada sebze ve ot tüketiminin en zengin olduğu mutfaklardan biridir.</p>
+      <ul>
+        <li><strong>Ordu Galdirik Kavurması (Tescil: 2022):</strong> Yörede 'Ispıt' veya 'Hodan' olarak da bilinen galdirik otunun taze sapları haşlanır, soğan, sarımsak ve tereyağında kavrularak üzerine yumurta kırılır. Doğal bir antioksidan deposudur.</li>
+        <li><strong>Ordu Melocan Kavurması (Tescil: 2022):</strong> Diken ucu filizlerinden yapılan bu lezzet, Karadeniz ormanlarının taze sürgünleridir. Hafif ekşimsi ve çıtır dokusuyla et yemeklerinin yanında vazgeçilmez bir mezedir.</li>
+        <li><strong>Ordu Sakarca Mıhlaması (Tescil: 2022):</strong> Çiçek açmamış yabani soğan otu olan sakarcanın mısır unu, yumurta ve çökelek peyniriyle tavada altın sarısı olana kadar kızartılmasıyla yapılır.</li>
+        <li><strong>Ordu Fındık Tirmidi Kavurması (Tescil: 2024):</strong> Fındık bahçelerinde yağmurların ardından doğal olarak yetişen etli tirmid mantarının (Lactarius), bol kuru soğan ve köy tereyağında sotelenmesiyle hazırlanan benzersiz bir orman lezzetidir.</li>
+        <li><strong>Ordu Fırın Fasulyesi Kavurması (Tescil: 2025):</strong> Taze fasulyelerin geleneksel fırınlarda kurutulduktan sonra kış aylarında sıcak suyla yumuşatılıp tereyağında kavrulmasıyla hazırlanır. Dumanı üstünde tüten enfes bir kış ziyafetidir.</li>
+      </ul>
+
+      <h2>3. Karadeniz Sofrasının Olmazsa Olmazı: Karalahana ve Çorbalar</h2>
+      <p>Karadeniz insanının gücünü aldığı kara lahana (yöre tabiriyle pancar), Ordu mutfağının baş tacıdır.</p>
+      <ul>
+        <li><strong>Ordu Pancar Çorbası / Karalahana Çorbası (Tescil: 2023):</strong> İnce doğranmış taze kara lahana, barbunya fasulyesi, mısır yarması, iç yağı ve acı biberin ağır ateşte özleşmesiyle pişen, kışın iç ısıtan en otantik çorbadır.</li>
+        <li><strong>Ordu Zeytinyağlı Karalahana Sarması / Pancar Sarması (Tescil: 2023):</strong> Damarları ayıklanmış narin lahana yapraklarının pirinç, nane, dereotu ve zeytinyağlı harçla kalem gibi sarılıp kısık ateşte demlendirilmesiyle yapılır.</li>
+      </ul>
+
+      <h2>4. Tarımsal İnciler: Dünyaca Ünlü Bakliyat ve Fındıklar</h2>
+      <p>Ordu'nun iklimi ve zengin toprak yapısı, sadece lezzet değil dünya çapında kalite ödülleri alan tarım ürünleri yetiştirir.</p>
+      <ul>
+        <li><strong>Akkuş Şeker Fasulyesi (Tescil: 2012 - Menşe Adı):</strong> Ordu’nun ilk tescilli ürünüdür! İncecik kabuğu, pişerken kabuk atmaması, ağızda eriyen krema kıvamı ve gaz yapmayan hafif yapısıyla Türkiye'nin en kaliteli kuru fasulyesi kabul edilir.</li>
+        <li><strong>Gürgentepe Çoban Fasulyesi (Tescil: 2022):</strong> İri taneli yapısı ve yüksek protein oranıyla yayla köylerinde geleneksel yöntemlerle ata tohumlarından üretilir.</li>
+        <li><strong>Ordu Çakıldak Fındığı & Gürgentepe Çakıldak Fındığı (Tescil: 2023 / 2026):</strong> Yağ oranı, dolgun iç randımanı ve kendine has aromasıyla dünyanın en kaliteli çerezlik fındığı olarak bilinir.</li>
+        <li><strong>Ordu Kivisi (Tescil: 2019 - Menşe Adı):</strong> Karadeniz sahil şeridinde yetişen, dengeli asit-şeker oranı ve yüksek C vitamini değeriyle Türkiye pazarının en lezzetli kivisidir.</li>
+      </ul>
+
+      <h2>5. Ağızları Tatlandıran Asırlık Reçeteler ve İçecekler</h2>
+      <p>Bir lezzet turunu geleneksel tatlılar ve ferahlatıcı içeceklerle taçlandırmadan Ordu'dan ayrılmak mümkün değildir.</p>
+      <ul>
+        <li><strong>Ordu Fındıklı Burma Tatlısı (Tescil: 2023):</strong> İncecik el açması baklava yufkasının içine bol miktarda taze çekilmiş Ordu fındığı serpilip oklavaya büzülerek fırınlanması ve sıcak şerbetle buluşturulmasıyla yapılan çıtır bayram tatlısıdır.</li>
+        <li><strong>Kabataş Helvası (Tescil: 2017):</strong> Kabataş ilçesine özgü, un, şeker ve tereyağının ustalıkla yoğrulup lif lif çekilmesiyle yapılan yumuşacık bir saray helvasıdır.</li>
+        <li><strong>Ordu Perşembe Ceviz Helvası (Tescil: 2017):</strong> Çöven otu suyu, şeker ağdası ve bol yerli cevizin saatlerce çırpılmasıyla yapılan bembeyaz köpük kıvamında tarihi bir lezzettir.</li>
+        <li><strong>Ordu Dağ Çileği Reçeli (Tescil: 2026):</strong> Baharda yüksek tepelerden tek tek elle toplanan mis kokulu yaban çileklerinin geleneksel bakır kazanlarda kaynatılmasıyla üretilir.</li>
+        <li><strong>Ünye İzabella Üzüm Suyu (Tescil: 2025):</strong> Karadeniz'e özgü kokulu siyah İzabella üzümlerinin sıkılmasıyla elde edilen, kendine has çileğimsi aroması ve mor rengiyle ferahlatıcı doğal bir meyve suyudur.</li>
+      </ul>
+
+      <h2>6. Kış Hazırlıkları: Taflan ve Yayla Pancarı Turşuları</h2>
+      <p>Karadeniz mutfağında turşu sadece yemeklerin yanında yenmez; tereyağında kavrularak ana yemek gibi tüketilir.</p>
+      <ul>
+        <li><strong>Ordu Taflan Turşusu (Tescil: 2022):</strong> Karayemiş meyvelerinin tuzlu salamurada fermente edilmesiyle yapılır. Çekirdekleri çıkarılıp bol soğanla tereyağında kavrularak sıcak servis edilir.</li>
+        <li><strong>Ordu Yayla Pancarı Turşusu / Dürme Turşusu (Tescil: 2017):</strong> Yaylalarda yetişen yabani pancar yapraklarının rulo şeklinde sarılıp (dürme) salamuraya basılmasıyla elde edilen kadim bir lezzettir.</li>
+      </ul>
+
+      <h2>📌 Menuland ile Ordu Lezzetlerini Keşfedin</h2>
+      <p>Ordu’nun bu 24 tescilli coğrafi işaretli lezzetini yerinde tatmak istiyorsanız, Menuland web sitesi ve mobil uygulaması üzerinden Ordu genelindeki yerel restoranları, pide salonlarını ve yayla lokantalarını inceleyebilir; güncel menüleri, fiyatları ve kullanıcı yorumlarını saniyeler içinde görebilirsiniz.</p>
+    `
   }
 ];
