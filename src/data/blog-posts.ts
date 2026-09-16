@@ -310,7 +310,7 @@ export const blogPosts: BlogPost[] = [
     excerpt: "Akkuş fasulyesinden Ordu pidesine, Galdirik kavurmasından Yalıköy köftesine kadar Türk Patent ve Marka Kurumu tarafından tescillenen Ordu'nun 24 coğrafi işaretli lezzetini keşfedin.",
     author: "Menuland Gastronomi Kurulu",
     date: "2026-09-01T10:00:00+03:00",
-    image: "/img/blog/ordu-plajlari.jpg",
+    image: "/img/blog/ordu-cografi-isaretler.jpg",
     category: "Gastronomi & Kültür",
     readTime: "12 dk",
     content: `
