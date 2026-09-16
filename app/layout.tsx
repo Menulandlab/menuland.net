@@ -20,8 +20,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Menuland - Dijital Menü, Keşif ve Sadakat Platformu",
-  description: "En yakın restoranların güncel menülerini, fiyatlarını keşfedin, rezervasyon yapın ve PuanLand ile indirim kazanın.",
+  metadataBase: new URL('https://www.menuland.net'),
+  title: {
+    default: "Menuland - Dijital Menü, Keşif ve Sadakat Platformu",
+    template: "%s | Menuland",
+  },
+  description: "En yakın restoranların güncel menülerini, fiyatlarını keşfedin, rezervasyon yapın, lezzet rehberlerini inceleyin ve PuanLand ile indirim kazanın.",
+  keywords: ["dijital menü", "qr menü", "restoran menüleri", "lezzet rehberi", "istanbul kahvaltı mekanları", "menuland", "menü fiyatları"],
+  openGraph: {
+    title: "Menuland - Dijital Menü, Keşif ve Sadakat Platformu",
+    description: "En yakın restoranların güncel menülerini, fiyatlarını keşfedin ve lezzet rehberlerini inceleyin.",
+    url: "https://www.menuland.net",
+    siteName: "Menuland",
+    locale: "tr_TR",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 // iOS Safari'de doğru viewport ölçeklendirmesi için

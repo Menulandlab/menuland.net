@@ -196,5 +196,112 @@ export const blogPosts: BlogPost[] = [
       <h2>Hikaye (Stories) ve Görsel Etkileşim</h2>
       <p>Mekanın günlük hazırlıklarını, şefin spesiyallerini ve misafirlerin paylaşımlarını hikayelerde öne çıkarmak güven verir. Menuland'in hikaye modülü sayesinde yerel bölgedeki kullanıcılar da uygulamanın ana sayfasında bu hikayeleri keşfedebilir.</p>
     `
+  },
+  {
+    slug: "istanbul-kahvalti-mekanlari-ve-lezzet-rotalari",
+    title: "İstanbul'un En Popüler Kahvaltı Mekanları ve Lezzet Rotaları Rehberi",
+    excerpt: "Boğaz kıyısından tarihi sokaklara, serpme kahvaltıdan yeni nesil brunch noktalarına kadar İstanbul'un en sevilen kahvaltı adreslerini keşfedin.",
+    author: "Menuland Gastronomi Ekibi",
+    date: "2026-07-15T10:00:00+03:00",
+    image: "/img/blog/2024-trendleri.jpg",
+    category: "Şehir & Lezzet Rehberi",
+    readTime: "7 dk",
+    content: `
+      <p>Hafta sonunun en keyifli ritüeli şüphesiz uzun, sohbeti bol ve lezzetli bir kahvaltı sofrasıdır. İstanbul, kıtaların kesişim noktasındaki konumu ve zengin mutfak kültürüyle kahvaltı konusunda dünyanın en zengin şehirlerinden biri olarak öne çıkar. İster Boğaz’ın serin esintisinde serpme kahvaltı yapın, ister tarihi yarımadanın dar sokaklarında çıtır çıtır simit ve çay keyfi yaşayın; İstanbul her damak tadına hitap eden sayısız seçenek barındırır.</p>
+
+      <h2>1. Beşiktaş Kahvaltıcılar Sokağı: Genç ve Dinamik Bir Klasik</h2>
+      <p>Şair Veysel Sokak olarak bilinen Beşiktaş Kahvaltıcılar Sokağı, özellikle üniversite öğrencilerinin ve şehri keşfetmek isteyen gençlerin bir numaralı buluşma noktasıdır. Pişiden sahanda sucuğa, bol peynirli menemenlerden özel reçelli pankeklere kadar uygun fiyatlı ve son derece zengin alternatifler sunulur.</p>
+
+      <h2>2. Boğaz Hattı: Emirgan, Bebek ve Rumeli Hisarı</h2>
+      <p>Güne masmavi Boğaz manzarası ve taze deniz havasıyla başlamak isteyenler için Rumeli Hisarı ve Emirgan hattı vazgeçilmezdir. Bu bölgedeki mekanlar, yerel üreticilerden temin edilen Ezine peynirleri, organik zeytinler, Trabzon tereyağı ve sıcacık taş fırın ekmekleriyle donatılmış gurme serpme kahvaltılar sunar.</p>
+
+      <h2>3. Moda ve Kadıköy: Yeni Nesil Brunch ve Butik Lezzetler</h2>
+      <p>Anadolu Yakası'nın kalbi Kadıköy Moda, geleneksel Türk kahvaltısının yanı sıra avokadolu ekşi maya tostlar, poşe yumurtalar, granola kaseleri ve nitelikli kahveler sunan üçüncü nesil kafeleriyle kahvaltı kültürüne modern bir soluk getiriyor. Hafta sonu yürüyüşü öncesinde taze lezzetler tatmak isteyenler için Moda sokakları birebirdir.</p>
+
+      <h2>📌 Menuland İpucu:</h2>
+      <p>Popüler kahvaltı mekanlarına gitmeden önce Menuland üzerinden güncel menü içeriklerini ve fiyatları kontrol edebilir, mekana özel indirim veya sadakat puanı fırsatlarını değerlendirebilirsiniz.</p>
+    `
+  },
+  {
+    slug: "gastronomi-turizmi-ve-cografi-isaretli-turk-lezzetleri",
+    title: "Gastronomi Turizmi Nedir? Türkiye'nin Lezzet Rotaları ve Coğrafi İşaretli Tatlar",
+    excerpt: "Gaziantep baklavasından Hatay künefesine, Ege otlarından Karadeniz pidesine uzanan Türkiye'nin eşsiz lezzet haritası.",
+    author: "Menuland Araştırma Ekibi",
+    date: "2026-07-20T11:30:00+03:00",
+    image: "/img/blog/dijitallesme.jpg",
+    category: "Gastronomi Kültürü",
+    readTime: "8 dk",
+    content: `
+      <p>Son yıllarda seyahat alışkanlıklarını kökten değiştiren en önemli trendlerden biri gastronomi turizmidir. Artık gezginler sadece tarihi kalıntıları ya da doğal güzellikleri görmekle yetinmiyor; bir bölgenin ruhunu, kültürünü ve hikayesini tabağında tatmak istiyor. Türkiye ise binlerce yıllık uygarlıkların mirasını taşıyan zengin mutfak kültürüyle dünyanın en güçlü gastronomi destinasyonlarının başında geliyor.</p>
+
+      <h2>UNESCO Tescilli Lezzet Başkentleri: Gaziantep, Hatay ve Afyonkarahisar</h2>
+      <p>Gaziantep’in katmer ve kebapları, Hatay’ın zengin mezeleri ve fırın lezzetleri, Afyon’un ise meşhur kaymağı ve sucuğu, UNESCO Yaratıcı Şehirler Ağı tarafından gastronomi alanında tescillenmiştir. Bu şehirlere yapılan seyahatler, yerel pazarlardan şef restoranlarına kadar uzanan tam teşekküllü bir lezzet serüvenine dönüşmektedir.</p>
+
+      <h2>Coğrafi İşaret Neden Önemlidir?</h2>
+      <p>Coğrafi işaret, bir ürünün belirgin bir niteliği, ünü veya diğer özellikleri itibariyle kökeninin bulunduğu yöre, alan, bölge veya ülke ile özdeşleştiğini gösteren resmi bir tescildir. Bir menüde 'Kars Kaşarı', 'Ege Sızma Zeytinyağı' veya 'Taşköprü Sarımsağı' görmek, misafire sunulan ürünün özgünlüğü ve lezzet kalitesi hakkında kesin güvence verir.</p>
+
+      <h2>Dijital Menülerde Coğrafi İşaret Vurgusu</h2>
+      <p>Restoranların dijital menülerinde yerel ve coğrafi işaretli malzemeleri belirtmeleri, tabakların değer algısını ve müşteri memnuniyetini doğrudan artırmaktadır. Tüketiciler hikayesi olan, yerel üreticiyi destekleyen tabakları tercih etmeye her zamankinden daha yatkındır.</p>
+    `
+  },
+  {
+    slug: "restoran-menu-tasarimi-ve-psikolojik-fiyatlandirma",
+    title: "Restoran Menü Tasarımı ve Menü Mühendisliği: Satışları Artıran İpuçları",
+    excerpt: "Görsel hiyerarşi, altın üçgen kuralı ve psikolojik fiyatlandırma teknikleriyle restoran menünüzü nasıl karlı bir satış aracına dönüştürebilirsiniz?",
+    author: "Akın Can Kabacık",
+    date: "2026-08-01T14:15:00+03:00",
+    image: "/img/blog/qr-menu-ipucu.jpg",
+    category: "İşletme Yönetimi",
+    readTime: "6 dk",
+    content: `
+      <p>Bir restoran menüsü sadece yemeklerin ve fiyatların yazılı olduğu sıradan bir liste değildir; işletmenin en güçlü satış temsilcisidir. Menü mühendisliği (Menu Engineering), psikoloji ve tasarım prensiplerini kullanarak misafirlerin dikkatini en karlı ve en lezzetli tabaklara yönlendirme sanatıdır.</p>
+
+      <h2>1. Altın Üçgen (Golden Triangle) Kuralı</h2>
+      <p>Göz takip araştırmaları (eye-tracking), misafirlerin bir menüye baktığında ilk olarak merkeze, ardından sağ üst köşeye ve son olarak sol üst köşeye odaklandığını göstermektedir. Bu üç bölge, işletmenizin en çok satmak istediği spesiyalleri ve imza lezzetleri yerleştirmek için idealdir.</p>
+
+      <h2>2. Yüksek Çözünürlüklü Görsellerin Gücü</h2>
+      <p>Geleneksel basılı menülerde fotoğraf kullanmak baskı kalitesi ve yer darlığı nedeniyle zor olabilir. Ancak dijital QR menülerde profesyonelce çekilmiş iştah açıcı fotoğraflar kullanmak, o tabağın sipariş edilme oranını %30'a kadar yükseltir.</p>
+
+      <h2>3. Para Birimi Sembolünü Kaldırmak</h2>
+      <p>Cornell Üniversitesi tarafından yapılan araştırmalar, fiyatların yanındaki büyük para birimi simgelerinin müşterilere harcama hissini hatırlatarak sipariş tutarını baskıladığını ortaya koymuştur. Rakamların sade ve net sunulması, misafirin fiyata değil lezzete odaklanmasını sağlar.</p>
+    `
+  },
+  {
+    slug: "saglikli-beslenme-trendleri-vegan-ve-glutensiz-menuler",
+    title: "Sağlıklı Beslenme Trendleri: Restoranlarda Vegan ve Glutensiz Menülerin Önemi",
+    excerpt: "Bitki bazlı beslenme, gıda alerjileri ve bilinçli tüketim alışkanlıkları restoran menülerini nasıl dönüştürüyor? İşletmeler için kapsamlı rehber.",
+    author: "Menuland Sağlık & Trend Ekibi",
+    date: "2026-08-10T09:00:00+03:00",
+    image: "/img/blog/musteri-sadakati.jpg",
+    category: "Sektörel Trendler",
+    readTime: "6 dk",
+    content: `
+      <p>Günümüzde tüketiciler sadece lezzete değil, tükettikleri gıdanın sağlığa etkisine, içeriğine ve üretim sürecine de büyük önem veriyor. Vegan, vejetaryen, glutensiz ve laktozsuz beslenme tercihleri artık niş bir kitleye ait olmaktan çıkıp ana akım bir tüketici talebine dönüşmüş durumdadır.</p>
+
+      <h2>Grup Kararlarında 'Belirleyici' Müşteri Etkisi</h2>
+      <p>4-5 kişilik bir arkadaş grubu akşam yemeği için mekan seçerken, gruptaki tek bir kişinin vegan veya çölyak hastası olması tüm grubun mekan tercihini belirler. Menüsünde alternatif sunamayan restoranlar sadece bir kişiyi değil, tüm masayı kaybetme riskiyle karşı karşıya kalır.</p>
+
+      <h2>Dijital Menülerde Alerjen ve Kategori Filtreleme</h2>
+      <p>Menuland'in dijital menü altyapısında yer alan alerjen etiketleri ve akıllı filtreleme seçenekleri, misafirlerin 'Glutensiz', 'Vegan' veya 'Şekersiz' seçenekleri saniyeler içinde süzebilmesini sağlar. Bu şeffaflık işletmeye duyulan güveni ve sadakati zirveye taşır.</p>
+    `
+  },
+  {
+    slug: "dijital-restoran-ve-qr-kod-guvenligi",
+    title: "Dijital Restoranlarda QR Kod Güvenliği ve Müşteri Gizliliği",
+    excerpt: "QR menü sistemlerinde veri güvenliği, KVKK uyumu ve müşterilere şeffaf dijital deneyim sunmanın incelikleri.",
+    author: "Menuland Güvenlik Ekibi",
+    date: "2026-08-25T15:40:00+03:00",
+    image: "/img/blog/sosyal-medya.jpg",
+    category: "Teknoloji & Güvenlik",
+    readTime: "5 dk",
+    content: `
+      <p>Restoranlarda basılı menülerin yerini QR menülerin alması hız, hijyen ve maliyet avantajları sağlarken; sistemin güvenilir ve kullanıcı dostu olması da büyük önem taşır. Müşterilerin güvenle masadaki karekodu okutabilmesi ve verilerinin korunduğunu bilmesi dijitalleşmenin temel şartıdır.</p>
+
+      <h2>Doğrulanmış QR Menü ve Sahtecilik Önlemleri</h2>
+      <p>Güvenilir bir QR menü sistemi, masadaki kodun doğrudan işletmenin resmi ve SSL sertifikalı (https://) adresine açılmasını sağlar. Menuland altyapısı, tüm bağlantıları uçtan uca şifreler ve kötü amaçlı yönlendirmelere karşı kurumsal koruma sunar.</p>
+
+      <h2>Uygulama İndirme Zorunluluğu Olmadan Erişim</h2>
+      <p>Müşteri memnuniyetini en üst düzeye çıkaran en kritik faktör, QR kodu okutan misafirin herhangi bir mobil uygulama indirmek zorunda kalmadan doğrudan tarayıcı üzerinden menüye erişebilmesidir. Hızlı, hafif ve şeffaf bir arayüz, dijital dönüşümün başarısını belirler.</p>
+    `
   }
 ];
