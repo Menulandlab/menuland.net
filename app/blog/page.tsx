@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { blogPosts } from '@/src/data/blog-posts';
 import { Clock, Calendar, ArrowRight, BookOpen, ArrowLeft } from 'lucide-react';
+import AdSenseBanner from '@/components/AdSenseBanner';
 
 export const metadata: Metadata = {
   title: 'Blog & Lezzet Rehberi | Menuland',
@@ -36,6 +37,11 @@ export default function BlogPage() {
         <p className="text-base text-zinc-500 max-w-2xl">
           Şehirlerin en popüler gezi noktaları, restoran teknolojileri, dijital menü trendleri ve gastronomi rehberleri.
         </p>
+      </div>
+
+      {/* Blog Listesi Üstü Sponsorlu Banner */}
+      <div className="w-full -my-2">
+        <AdSenseBanner format="horizontal" />
       </div>
 
       {/* Makale Listesi Grid */}

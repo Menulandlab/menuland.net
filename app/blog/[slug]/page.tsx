@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { blogPosts } from '@/src/data/blog-posts';
 import { ArrowLeft, Calendar, Clock, User, Share2, Tag, BookOpen } from 'lucide-react';
+import AdSenseBanner from '@/components/AdSenseBanner';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -110,6 +111,11 @@ export default async function BlogPostPage({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
       </article>
+
+      {/* Makale Sonu Sponsorlu Reklam Alanı */}
+      <div className="w-full -my-2">
+        <AdSenseBanner format="auto" />
+      </div>
 
       {/* İlgili / Önerilen Yazılar */}
       {relatedPosts.length > 0 && (
