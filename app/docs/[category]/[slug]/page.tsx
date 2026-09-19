@@ -145,7 +145,7 @@ export default async function DocDetailPage({ params }: PageProps) {
         />
       ))}
 
-      <div className="flex min-h-[calc(100vh-4rem)] bg-white">
+      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] bg-white w-full">
         {/* Sol Sidebar */}
         <DocsSidebar
           currentCategorySlug={article.categorySlug}
@@ -153,10 +153,11 @@ export default async function DocDetailPage({ params }: PageProps) {
         />
 
         {/* Makale İçeriği */}
-        <main className="flex-1 px-4 py-8 sm:px-8 lg:px-12">
+        <main className="w-full flex-1 px-4 py-6 sm:px-8 lg:px-12 max-w-4xl">
           <DocsArticle article={article} />
         </main>
       </div>
     </>
   );
 }
+

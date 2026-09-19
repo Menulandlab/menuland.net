@@ -80,25 +80,26 @@ export default function DocsHubPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="flex min-h-[calc(100vh-4rem)] bg-white">
+      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] bg-white w-full">
         {/* Sol Sabit Sidebar */}
         <DocsSidebar />
 
         {/* Ana İçerik Alanı */}
-        <main className="flex-1 px-4 py-8 sm:px-8 lg:px-12 max-w-5xl">
+        <main className="w-full flex-1 px-4 py-6 sm:px-8 lg:px-12 max-w-5xl">
           {/* Hero Karşılama */}
-          <div className="mb-12 border-b border-zinc-100 pb-10">
-            <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50/60 px-3 py-1 text-xs font-semibold text-[#FF4D00] mb-4">
+          <div className="mb-8 sm:mb-12 border-b border-zinc-100 pb-6 sm:pb-10">
+            <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50/60 px-3 py-1 text-xs font-semibold text-[#FF4D00] mb-3 sm:mb-4">
               <Sparkles className="h-3.5 w-3.5" />
               <span>Resmi Bilgi ve Dokümantasyon Portalı</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 leading-tight">
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 leading-tight">
               Menuland Kullanım Kılavuzu &amp; Bilgi Merkezi
             </h1>
-            <p className="mt-3 text-base sm:text-lg text-zinc-600 max-w-2xl font-normal leading-relaxed">
+            <p className="mt-2.5 sm:mt-3 text-sm sm:text-lg text-zinc-600 max-w-2xl font-normal leading-relaxed">
               İster sıra beklemeden lezzet siparişi veren bir müşteri, ister menüsünü dijitale taşıyan bir restoran sahibi olun; aradığınız tüm cevaplar ve adım adım rehberler burada.
             </p>
           </div>
+
 
           {/* İki Ana Kategori Kartı (Müşteri vs İşletme) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-14">
