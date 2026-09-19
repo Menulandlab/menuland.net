@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { getBusinesses, getBusinessListingCategories } from '@/src/api/businessService';
 import { getBusinessUrl, getCategoryUrl } from '@/lib/utils';
 import { blogPosts } from '@/src/data/blog-posts';
+import { getAllDocsArticles } from '@/src/data/docs-data';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://menuland.net';
@@ -37,6 +38,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/docs`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/hakkimizda`,
@@ -78,6 +85,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  // 3. Dokümantasyon & Bilgi Merkezi Sayfaları
+  const docsArticles = getAllDocsArticles();
+  const docsPages: MetadataRoute.Sitemap = docsArticles.map((doc) => ({
+    url: `${baseUrl}/docs/${doc.categorySlug}/${doc.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.85,
+  }));
+
   // 3. Dinamik İşletmeler (Mekanlar)
   let businessPages: MetadataRoute.Sitemap = [];
   try {
@@ -106,5 +122,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Sitemap categories fetch error:', error);
   }
 
-  return [...staticPages, ...blogPages, ...categoryPages, ...businessPages];
+  return [...staticPages, ...docsPages, ...blogPages, ...categoryPages, ...businessPages];
 }

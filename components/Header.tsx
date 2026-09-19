@@ -75,7 +75,8 @@ export default function Header() {
           <div className="flex items-center gap-2 sm:gap-3">
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-600 mr-2">
               <Link href="/kesfet" className="hover:text-[#FF4D00] transition-colors">Keşfet</Link>
-              <Link href="/blog" className="hover:text-[#FF4D00] transition-colors">Rehber & Blog</Link>
+              <Link href="/blog" className="hover:text-[#FF4D00] transition-colors">Blog</Link>
+              <Link href="/docs" className="hover:text-[#FF4D00] transition-colors">Kılavuz</Link>
               <a
                 href="https://isletme.menuland.net"
                 target="_blank"

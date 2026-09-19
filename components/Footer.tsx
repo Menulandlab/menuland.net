@@ -30,6 +30,7 @@ export default function Footer() {
           <div>
             <h3 className="text-sm font-semibold text-zinc-900">Kurumsal & Keşif</h3>
             <ul className="mt-4 space-y-2 text-sm text-zinc-650">
+              <li><Link href="/docs" className="hover:text-[#FF4D00] transition-colors font-semibold text-[#FF4D00]">Kullanım Kılavuzu & Bilgi Merkezi</Link></li>
               <li><Link href="/blog" className="hover:text-[#FF4D00] transition-colors font-medium text-zinc-800">Lezzet Rehberi & Blog</Link></li>
               <li><Link href="/kesfet" className="hover:text-[#FF4D00] transition-colors">Şehri Keşfet</Link></li>
               <li><Link href="/all-businesses" className="hover:text-[#FF4D00] transition-colors">Tüm Mekanlar</Link></li>
