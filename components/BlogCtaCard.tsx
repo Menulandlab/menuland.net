@@ -44,7 +44,7 @@ export default function BlogCtaCard({ type = 'business' }: BlogCtaCardProps) {
         Menuland ile saniyeler içinde kendi dijital menünüzü oluşturun, müşteri etkileşiminizi artırın.
       </p>
       <a
-        href="https://isletme.menuland.net/register"
+        href="https://isletme.menuland.net/"
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center justify-center gap-2 bg-[#FF4D00] hover:bg-[#e04400] text-white font-bold text-base px-8 py-3.5 rounded-2xl shadow-lg shadow-[#FF4D00]/25 hover:shadow-xl transition-all hover:scale-105 active:scale-95"

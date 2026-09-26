@@ -320,7 +320,7 @@ export default function DocsArticle({ article }: DocsArticleProps) {
         <div className="mt-4 sm:mt-0 shrink-0">
           {isBusiness ? (
             <a
-              href="https://isletme.menuland.net/register"
+              href="https://isletme.menuland.net/"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-xl bg-[#FF4D00] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#e04400] transition-colors shadow-sm"
