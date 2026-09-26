@@ -1,27 +1,15 @@
-'use client';
-
 import React from 'react';
-import { Loader2 } from 'lucide-react';
 
 export default function GlobalLoading() {
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm transition-all duration-300">
-      <div className="flex flex-col items-center gap-4 p-6 rounded-3xl bg-white border border-gray-100 shadow-xl max-w-xs w-full text-center">
-        {/* Animated Brand Spinner */}
-        <div className="relative flex items-center justify-center">
-          <Loader2 className="h-10 w-10 text-[#FF4D00] animate-spin" />
-          <span className="absolute text-[9px] font-black text-[#FF4D00] uppercase tracking-wider animate-pulse">
-            ML
-          </span>
-        </div>
-        
-        <div>
-          <h3 className="text-sm font-black text-zinc-900 tracking-tight">Menuland Yükleniyor</h3>
-          <p className="text-[10px] text-zinc-500 font-medium mt-1">
-            En güncel lezzetler hazırlanıyor...
-          </p>
-        </div>
+    <div className="w-full py-12 flex flex-col items-center justify-center min-h-[40vh] text-center" aria-live="polite">
+      <div className="relative flex items-center justify-center mb-4">
+        <div className="h-9 w-9 rounded-full border-3 border-[#FF4D00]/20 border-t-[#FF4D00] animate-spin" />
+        <span className="absolute text-[9px] font-black text-[#FF4D00] uppercase tracking-wider">
+          ML
+        </span>
       </div>
+      <p className="text-xs font-semibold text-zinc-500">İçerik yükleniyor...</p>
     </div>
   );
 }

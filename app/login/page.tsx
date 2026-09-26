@@ -129,9 +129,6 @@ function LoginForm() {
             priority
             className="object-contain"
           />
-          <span className="absolute -top-1 -right-8 text-[8px] font-black tracking-widest text-[#FF4D00]/85 select-none bg-orange-50 px-1.5 py-0.5 rounded-full">
-            BETA
-          </span>
         </Link>
         <h1 className="text-2xl font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
           Giriş Yap <Sparkles className="h-5 w-5 text-[#FF4D00]" />
@@ -226,18 +223,6 @@ function LoginForm() {
         <div className="space-y-3 flex flex-col items-center">
           {/* Google Sign-in Container */}
           <div id="google-signin-btn-container" className="w-[240px] h-[40px] flex justify-center" />
-
-           {/* Apple placeholder */}
-          <button
-            type="button"
-            onClick={() => alert('Apple ile Giriş yakında web sitemizde de aktif olacaktır. Lütfen Google ile giriş yapın veya şifrenizi kullanın.')}
-            className="w-[240px] flex items-center justify-center gap-2 bg-black border border-black rounded-full h-[40px] text-xs font-bold text-white hover:bg-zinc-850 transition-all cursor-pointer"
-          >
-            <svg className="h-4 w-4 fill-white" viewBox="0 0 24 24">
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.82M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.17.67-2.88 1.49-.6.69-1.12 1.84-.98 2.94 1.1.09 2.21-.56 2.87-1.37z" />
-            </svg>
-            Apple ile Giriş (Yakında)
-          </button>
         </div>
       </div>
 

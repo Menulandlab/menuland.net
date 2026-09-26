@@ -42,7 +42,7 @@ export default function Header() {
 
           {/* Logo */}
           <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4">
-            <Link href="/" className="flex items-center relative pr-7 shrink-0">
+            <Link href="/" className="flex items-center shrink-0">
               <Image
                 src="/images/menuland-600x200.png"
                 alt="Menuland Logo"
@@ -51,9 +51,6 @@ export default function Header() {
                 priority
                 className="object-contain"
               />
-              <span className="absolute top-0.5 right-0 text-[8px] font-black tracking-widest text-[#FF4D00]/80">
-                BETA
-              </span>
             </Link>
 
             {/* Konum Butonu — <dialog> açar */}

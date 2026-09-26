@@ -43,9 +43,9 @@ export default async function DiscoverPage() {
   const cityId = cookieStore.get('selectedCityId')?.value || null;
   const cityName = cookieStore.get('selectedCityName')?.value || null;
 
-  // Kültürel Etkinlikleri ve Keşfet Kategorilerini çek
+  // Kültürel Etkinlikleri ve Keşfet Kategorilerini çek (Şehir seçilmemişse genel etkinlikleri göster)
   const [eventsRes, categoriesRes] = await Promise.all([
-    cityId ? webPublicClient.get(`/events?city_id=${cityId}`).catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
+    webPublicClient.get(cityId ? `/events?city_id=${cityId}` : '/events').catch(() => ({ data: [] })),
     webPublicClient.get('/discovery-categories').catch(() => ({ data: [] })),
   ]);
 
@@ -73,7 +73,7 @@ export default async function DiscoverPage() {
               Şu anda <span className="font-bold text-zinc-800">{cityName}</span> şehrindeki etkinlikleri ve mekanları keşfediyorsunuz.
             </>
           ) : (
-            'Etkinlikleri ve mekan rehberlerini görmek için sol üstten bir şehir seçin.'
+            'Türkiye genelindeki öne çıkan etkinlikleri, konser, tiyatro ve şehir keşif rehberlerini inceleyin.'
           )}
         </p>
       </div>
@@ -84,13 +84,9 @@ export default async function DiscoverPage() {
           <Ticket className="h-6 w-6 text-[#FF4D00]" /> Kültürel Etkinlikler
         </h2>
 
-        {!cityId ? (
+        {events.length === 0 ? (
           <div className="text-center py-12 border border-dashed border-gray-200 rounded-3xl bg-zinc-50 text-zinc-500 text-sm">
-            Etkinlikleri listelemek için lütfen üst menüden bir şehir seçin.
-          </div>
-        ) : events.length === 0 ? (
-          <div className="text-center py-12 border border-dashed border-gray-200 rounded-3xl bg-zinc-50 text-zinc-500 text-sm">
-            {cityName} şehrinde yakın zamanda planlanmış bir etkinlik bulunmuyor.
+            {cityName ? `${cityName} şehrinde yakın zamanda planlanmış bir etkinlik bulunmuyor.` : 'Yakın zamanda planlanmış etkinlikler listeleniyor...'}
           </div>
         ) : (
           /* Afiş şeklinde yan yana ve alt alta duran Grid yapısı */

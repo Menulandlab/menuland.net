@@ -154,9 +154,6 @@ function RegisterForm() {
             priority
             className="object-contain"
           />
-          <span className="absolute -top-1 -right-8 text-[8px] font-black tracking-widest text-[#FF4D00]/85 select-none bg-orange-50 px-1.5 py-0.5 rounded-full">
-            BETA
-          </span>
         </Link>
         <h1 className="text-2xl font-black text-zinc-900 tracking-tight flex items-center gap-1.5">
           Bireysel Kayıt <Sparkles className="h-5 w-5 text-[#FF4D00]" />

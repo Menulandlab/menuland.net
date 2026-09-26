@@ -9,7 +9,7 @@ export default function Footer() {
           
           {/* Brand */}
           <div className="flex flex-col gap-4">
-            <Link href="/" className="flex items-center group relative pr-8 self-start">
+            <Link href="/" className="flex items-center self-start">
               <Image
                 src="/images/menuland-600x200.png"
                 alt="Menuland Logo"
@@ -17,9 +17,6 @@ export default function Footer() {
                 height={40}
                 className="object-contain"
               />
-              <span className="absolute top-1 right-0 text-[8px] font-black tracking-widest text-[#FF4D00]/85 select-none">
-                BETA
-              </span>
             </Link>
             <p className="text-xs text-zinc-500 leading-relaxed">
               Çevrenizdeki restoranların en güncel menülerini, fiyatlarını ve rezervasyon fırsatlarını keşfedin.
