@@ -1,23 +1,28 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { blogPosts } from '@/src/data/blog-posts';
+import { getBlogPostBySlug, getBlogPosts } from '@/src/api/blogService';
 import { ArrowLeft, Calendar, Clock, User, Share2, Tag, BookOpen } from 'lucide-react';
 import AdSenseBanner from '@/components/AdSenseBanner';
+
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+export const revalidate = 0;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  return blogPosts.map((post) => ({
+  const posts = await getBlogPosts();
+  return posts.map((post) => ({
     slug: post.slug,
   }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = blogPosts.find((p) => p.slug === slug);
+  const { post } = await getBlogPostBySlug(slug);
 
   if (!post) {
     return {
@@ -41,14 +46,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = blogPosts.find((p) => p.slug === slug);
+  const { post, related: relatedPosts } = await getBlogPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
-
-  // Diğer yazılar (Önerilenler)
-  const relatedPosts = blogPosts.filter((p) => p.slug !== slug).slice(0, 3);
 
   return (
     <div className="flex flex-col gap-10 py-6 max-w-4xl mx-auto">

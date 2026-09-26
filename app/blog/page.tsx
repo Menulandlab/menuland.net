@@ -1,9 +1,12 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { blogPosts } from '@/src/data/blog-posts';
+import { getBlogPosts } from '@/src/api/blogService';
 import { Clock, Calendar, ArrowRight, BookOpen, ArrowLeft } from 'lucide-react';
 import AdSenseBanner from '@/components/AdSenseBanner';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: 'Blog & Lezzet Rehberi | Menuland',
@@ -15,7 +18,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const posts = await getBlogPosts();
   return (
     <div className="flex flex-col gap-10 py-6 max-w-6xl mx-auto">
       {/* Geri Dön Linki */}
@@ -46,7 +50,7 @@ export default function BlogPage() {
 
       {/* Makale Listesi Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {blogPosts.map((post) => (
+        {posts.map((post) => (
           <article
             key={post.slug}
             className="group flex flex-col bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 hover:border-[#FF4D00]/20"

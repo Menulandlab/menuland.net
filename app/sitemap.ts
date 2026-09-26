@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getBusinesses, getBusinessListingCategories } from '@/src/api/businessService';
 import { getBusinessUrl, getCategoryUrl } from '@/lib/utils';
-import { blogPosts } from '@/src/data/blog-posts';
+import { getBlogPosts } from '@/src/api/blogService';
 import { getAllDocsArticles } from '@/src/data/docs-data';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -78,10 +78,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // 2. Blog & Rehber Yazıları
-  const blogPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
+  const dynamicBlogPosts = await getBlogPosts();
+  const blogPages: MetadataRoute.Sitemap = dynamicBlogPosts.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.date),
-    changeFrequency: 'monthly',
+    lastModified: new Date(post.date || new Date()),
+    changeFrequency: 'weekly' as const,
     priority: 0.8,
   }));
 
