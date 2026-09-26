@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getBlogPostBySlug, getBlogPosts } from '@/src/api/blogService';
+import { getBlogPostBySlug, getBlogPosts, formatBlogContent } from '@/src/api/blogService';
 import { ArrowLeft, Calendar, Clock, User, Share2, Tag, BookOpen } from 'lucide-react';
 import AdSenseBanner from '@/components/AdSenseBanner';
 
@@ -110,7 +110,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                      [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6 [&>ul]:space-y-2
                      [&>ul>li]:text-zinc-700
                      [&>strong]:text-zinc-950 [&>strong]:font-bold"
-          dangerouslySetInnerHTML={{ __html: post.content }}
+          dangerouslySetInnerHTML={{ __html: formatBlogContent(post.content) }}
         />
       </article>
 

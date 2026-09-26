@@ -23,6 +23,51 @@ export interface BlogCategoryCount {
 }
 
 /**
+ * Düz metin olarak girilmiş içerikleri otomatik paragraflara (<p>) ve başlıklara dönüştürür.
+ * İçerikte zaten <p> veya <div> etiketleri varsa orijinal yapıyı korur.
+ */
+export function formatBlogContent(content?: string): string {
+  if (!content) return '';
+  const trimmedContent = content.trim();
+
+  // Zaten <p> veya <div> etiketleri içeriyorsa dokunma
+  if (/<\/(p|div)>/i.test(trimmedContent)) {
+    return trimmedContent;
+  }
+
+  // Paragraf ayracı (\n\n veya daha fazla satır başı)
+  const blocks = trimmedContent.split(/\n\s*\n+/);
+  return blocks
+    .map((block) => {
+      const trimmed = block.trim();
+      if (!trimmed) return '';
+
+      // Başında tek başına <strong>...</strong> olan blokları <h2> başlık ve takip eden paragrafa dönüştür
+      const strongHeadingMatch = trimmed.match(
+        /^<strong>([\s\S]+?)<\/strong>(?:\n+([\s\S]+))?$/i
+      );
+      if (strongHeadingMatch) {
+        const heading = strongHeadingMatch[1].trim();
+        const rest = (strongHeadingMatch[2] || '').trim();
+        let html = `<h2>${heading}</h2>`;
+        if (rest) {
+          html += `\n<p>${rest.replace(/\n/g, '<br />')}</p>`;
+        }
+        return html;
+      }
+
+      // Zaten bir blok elementi ise (h2, h3, ul, ol, blockquote, img)
+      if (/^<(h[1-6]|p|div|ul|ol|blockquote|img|figure)/i.test(trimmed)) {
+        return trimmed;
+      }
+
+      return `<p>${trimmed.replace(/\n/g, '<br />')}</p>`;
+    })
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+/**
  * Normalizes an API post or fallback post to ensure consistent fields
  */
 function normalizePost(post: any): BlogPostItem {
