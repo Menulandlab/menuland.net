@@ -14,6 +14,7 @@ export interface BlogPostItem {
   category: string;
   readTime: string;
   read_time?: string;
+  cta_card?: 'business' | 'user' | 'none';
   view_count?: number;
 }
 
@@ -86,6 +87,7 @@ function normalizePost(post: any): BlogPostItem {
     category: post.category || 'Gastronomi',
     readTime: readTime,
     read_time: readTime,
+    cta_card: (post.cta_card as any) || (post.category === 'Şehir Rehberi' ? 'user' : 'business'),
     view_count: Number(post.view_count || 0),
   };
 }

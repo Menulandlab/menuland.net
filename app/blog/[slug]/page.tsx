@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { getBlogPostBySlug, getBlogPosts, formatBlogContent } from '@/src/api/blogService';
 import { ArrowLeft, Calendar, Clock, User, Share2, Tag, BookOpen } from 'lucide-react';
 import AdSenseBanner from '@/components/AdSenseBanner';
+import BlogCtaCard from '@/components/BlogCtaCard';
 
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
@@ -113,6 +114,9 @@ export default async function BlogPostPage({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: formatBlogContent(post.content) }}
         />
       </article>
+
+      {/* Yazı Sonu Çağrı Kartı (CTA Card - İşletmeler veya Kullanıcılar İçin) */}
+      <BlogCtaCard type={post.cta_card} />
 
       {/* Makale Sonu Sponsorlu Reklam Alanı */}
       <div className="w-full -my-2">
