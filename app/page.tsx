@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Search, Star, MapPin, Utensils, Compass, BookOpen, ArrowRight } from 'lucide-react';
 import { getBusinessUrl, getCategoryUrl } from '../lib/utils';
 import { blogPosts } from '@/src/data/blog-posts';
-import AdSenseBanner from '@/components/AdSenseBanner';
+import YandexAdBanner from '@/components/YandexAdBanner';
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -65,7 +65,7 @@ export default async function Home() {
 
       {/* Hero Altı Sponsorlu Reklam Alanı */}
       <div className="max-w-4xl mx-auto w-full -my-6">
-        <AdSenseBanner format="horizontal" />
+        <YandexAdBanner containerId="yandex_rtb_R-A-20154632-1" />
       </div>
 
       {/* Categories */}
@@ -218,7 +218,7 @@ export default async function Home() {
 
       {/* Sayfa Altı Geniş Sponsorlu Reklam */}
       <section className="w-full">
-        <AdSenseBanner format="auto" />
+        <YandexAdBanner containerId="yandex_rtb_R-A-20154632-1-bottom" />
       </section>
 
     </div>

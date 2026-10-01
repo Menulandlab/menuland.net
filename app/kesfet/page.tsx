@@ -2,7 +2,7 @@ import { webPublicClient } from '../../lib/api';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Calendar, Compass, MapPin, Map, ArrowLeft, Ticket, Landmark, Music, TreePine, GlassWater, Landmark as Museum } from 'lucide-react';
-import AdSenseBanner from '@/components/AdSenseBanner';
+import YandexAdBanner from '@/components/YandexAdBanner';
 
 interface DiscoveryCategory {
   id: number;
@@ -148,7 +148,7 @@ export default async function DiscoverPage() {
 
       {/* Keşfet Sponsorlu Reklam Alanı */}
       <div className="w-full -my-4">
-        <AdSenseBanner format="horizontal" />
+        <YandexAdBanner />
       </div>
 
       {/* 2. Şehri Keşfet Bölümü */}

@@ -68,10 +68,14 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-white text-zinc-900">
+        {/* Yandex.RTB */}
+        <Script id="yandex-rtb-init" strategy="afterInteractive">
+          {`window.yaContextCb=window.yaContextCb||[]`}
+        </Script>
         <Script
+          id="yandex-rtb-context"
+          src="https://yandex.ru/ads/system/context.js"
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3776725197972523"
-          crossOrigin="anonymous"
           strategy="afterInteractive"
         />
         <ProtectionProvider>

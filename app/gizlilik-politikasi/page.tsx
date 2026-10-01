@@ -45,22 +45,19 @@ export default function PrivacyPage() {
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-bold text-zinc-950 border-b border-gray-100 pb-2">4. Google AdSense ve Çerez (Cookie) Politikası</h2>
+          <h2 className="text-lg font-bold text-zinc-950 border-b border-gray-100 pb-2">4. Reklam Ağları (Yandex Ads, Google) ve Çerez (Cookie) Politikası</h2>
           <p>
-            Platformumuzda (web sitemizde), ziyaretçilerimize ücretsiz ve kesintisiz hizmet sunabilmek amacıyla <strong>Google AdSense</strong> reklam ağı kullanılmaktadır. Bu kapsamda:
+            Platformumuzda (web sitemizde), ziyaretçilerimize ücretsiz ve kesintisiz hizmet sunabilmek amacıyla <strong>Yandex Advertising Network (Yandex Partner / RTB)</strong> ve anlaşmalı üçüncü taraf reklam ağları kullanılmaktadır. Bu kapsamda:
           </p>
           <ul className="list-disc pl-5 space-y-2">
             <li>
-              Google dahil üçüncü taraf satıcılar, kullanıcıların web sitemize veya internetteki diğer web sitelerine daha önce yaptıkları ziyaretlere dayalı olarak reklam yayınlamak için çerezlerden (cookies) yararlanır.
+              Yandex ve iş ortakları dahil üçüncü taraf satıcılar, kullanıcıların web sitemize veya internetteki diğer web sitelerine daha önce yaptıkları ziyaretlere dayalı olarak ilgi alanlarına yönelik reklamlar sunmak amacıyla çerezlerden (cookies) ve anonim tanımlayıcılardan yararlanır.
             </li>
             <li>
-              Google'ın reklam çerezlerini kullanması, Google ve iş ortaklarının kullanıcılarımıza sitemize ve/veya internetteki diğer sitelere yaptıkları ziyaretlere dayalı olarak reklamlar sunmasına olanak tanır.
+              Reklam ağlarının kullandığı çerezler, reklamların etkinliğini ölçmek, aynı reklamların mükerrer gösterimini sınırlandırmak ve kullanıcı deneyimini optimize etmek amacıyla kullanılır.
             </li>
             <li>
-              Kullanıcılar, <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-[#FF4D00] font-semibold underline">Google Reklam Ayarları</a> sayfasını ziyaret ederek kişiselleştirilmiş reklamcılık için çerez kullanımını devre dışı bırakabilirler.
-            </li>
-            <li>
-              Alternatif olarak kullanıcılar, üçüncü taraf satıcıların kişiselleştirilmiş reklamcılık için çerez kullanımını <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-[#FF4D00] font-semibold underline">aboutads.info</a> adresini ziyaret ederek devre dışı bırakabilirler.
+              Kullanıcılar, tarayıcı ayarlarından çerez tercihini diledikleri zaman değiştirebilir veya üçüncü taraf satıcıların kişiselleştirilmiş reklamcılık için çerez kullanımını <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-[#FF4D00] font-semibold underline">aboutads.info</a> ya da ilgili reklam sağlayıcılarının gizlilik portalları üzerinden devre dışı bırakabilirler.
             </li>
           </ul>
         </section>

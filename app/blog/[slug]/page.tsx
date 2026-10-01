@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getBlogPostBySlug, getBlogPosts, formatBlogContent } from '@/src/api/blogService';
 import { ArrowLeft, Calendar, Clock, User, Share2, Tag, BookOpen } from 'lucide-react';
-import AdSenseBanner from '@/components/AdSenseBanner';
+import YandexAdBanner from '@/components/YandexAdBanner';
 import BlogCtaCard from '@/components/BlogCtaCard';
 
 export const dynamic = 'force-dynamic';
@@ -120,7 +120,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
       {/* Makale Sonu Sponsorlu Reklam Alanı */}
       <div className="w-full -my-2">
-        <AdSenseBanner format="auto" />
+        <YandexAdBanner />
       </div>
 
       {/* İlgili / Önerilen Yazılar */}

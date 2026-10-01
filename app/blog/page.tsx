@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getBlogPosts } from '@/src/api/blogService';
 import { Clock, Calendar, ArrowRight, BookOpen, ArrowLeft } from 'lucide-react';
-import AdSenseBanner from '@/components/AdSenseBanner';
+import YandexAdBanner from '@/components/YandexAdBanner';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -45,7 +45,7 @@ export default async function BlogPage() {
 
       {/* Blog Listesi Üstü Sponsorlu Banner */}
       <div className="w-full -my-2">
-        <AdSenseBanner format="horizontal" />
+        <YandexAdBanner />
       </div>
 
       {/* Makale Listesi Grid */}

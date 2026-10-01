@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
+import YandexAdBanner from './YandexAdBanner';
 
 interface AdSenseBannerProps {
   slotId?: string;
@@ -9,64 +10,25 @@ interface AdSenseBannerProps {
   className?: string;
   style?: React.CSSProperties;
   label?: string;
+  containerId?: string;
 }
 
+/**
+ * AdSenseBanner -> YandexAdBanner geçiş köprüsü (Geriye Dönük Uyumluluk)
+ * Google AdSense yerine Yandex Partner / Yandex.RTB reklamlarını render eder.
+ */
 export default function AdSenseBanner({
-  slotId = '5806276232',
-  format = 'auto',
-  responsive = true,
   className = '',
   style = {},
   label = 'Sponsorlu Reklam',
+  containerId,
 }: AdSenseBannerProps) {
-  const adRef = useRef<HTMLModElement | null>(null);
-  const pushedRef = useRef(false);
-
-  useEffect(() => {
-    // React StrictMode çift çağrıyı engelle
-    if (!pushedRef.current) {
-      try {
-        if (typeof window !== 'undefined') {
-          const adsbygoogle = (window as any).adsbygoogle || [];
-          adsbygoogle.push({});
-          pushedRef.current = true;
-        }
-      } catch (e) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('AdSense load error:', e);
-        }
-      }
-    }
-  }, []);
-
   return (
-    <div
-      className={`w-full my-6 flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-gray-100 bg-zinc-50/50 p-3 shadow-xs ${className}`}
-    >
-      {label && (
-        <div className="w-full flex items-center justify-between mb-2 px-1">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-            {label}
-          </span>
-        </div>
-      )}
-      <div className="w-full flex justify-center items-center overflow-hidden min-h-[90px]">
-        <ins
-          ref={adRef}
-          className="adsbygoogle"
-          style={{
-            display: 'block',
-            width: '100%',
-            minHeight: '90px',
-            textAlign: 'center',
-            ...style,
-          }}
-          data-ad-client="ca-pub-3776725197972523"
-          data-ad-slot={slotId}
-          data-ad-format={format}
-          data-full-width-responsive={responsive ? 'true' : 'false'}
-        />
-      </div>
-    </div>
+    <YandexAdBanner
+      className={className}
+      style={style}
+      label={label}
+      containerId={containerId}
+    />
   );
 }
