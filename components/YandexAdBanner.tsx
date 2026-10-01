@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 
 declare global {
   interface Window {
@@ -26,22 +26,22 @@ export default function YandexAdBanner({
   label = 'Sponsorlu Reklam',
 }: YandexAdBannerProps) {
   const targetId = containerId || `yandex_rtb_${blockId}`;
-  const requestedRef = useRef(false);
 
   useEffect(() => {
-    if (requestedRef.current) return;
-
+    // Next.js SPA içi dinamik sayfa geçişlerinde konteyner boşsa reklamı render et
     try {
       window.yaContextCb = window.yaContextCb || [];
       window.yaContextCb.push(() => {
-        if (typeof window !== 'undefined' && window.Ya?.Context?.AdvManager) {
-          window.Ya.Context.AdvManager.render({
-            blockId: blockId,
-            renderTo: targetId,
-          });
+        const el = document.getElementById(targetId);
+        if (el && el.children.length === 0) {
+          if (window.Ya?.Context?.AdvManager) {
+            window.Ya.Context.AdvManager.render({
+              blockId: blockId,
+              renderTo: targetId,
+            });
+          }
         }
       });
-      requestedRef.current = true;
     } catch (err) {
       if (process.env.NODE_ENV !== 'production') {
         console.warn('Yandex Ads load error:', err);
@@ -51,7 +51,7 @@ export default function YandexAdBanner({
 
   return (
     <div
-      className={`w-full my-6 flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-gray-100 bg-zinc-50/50 p-3 shadow-xs ${className}`}
+      className={`w-full my-6 flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-zinc-50/50 p-3 shadow-xs ${className}`}
     >
       {label && (
         <div className="w-full flex items-center justify-between mb-2 px-1">
@@ -60,15 +60,21 @@ export default function YandexAdBanner({
           </span>
         </div>
       )}
-      <div className="w-full flex justify-center items-center overflow-hidden min-h-[90px]">
+      <div className="w-full block min-h-[90px] overflow-hidden text-center">
         {/* Yandex.RTB {blockId} */}
         <div
           id={targetId}
+          className="w-full block min-h-[90px]"
           style={{
             minHeight: '90px',
             width: '100%',
             textAlign: 'center',
             ...style,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.yaContextCb=window.yaContextCb||[];window.yaContextCb.push(function(){if(window.Ya&&window.Ya.Context&&window.Ya.Context.AdvManager){window.Ya.Context.AdvManager.render({"blockId":"${blockId}","renderTo":"${targetId}"});}});`,
           }}
         />
       </div>
