@@ -74,7 +74,7 @@ export default function RootLayout({
         </Script>
         <Script
           id="yandex-rtb-context"
-          src="https://yandex.ru/ads/system/context.js"
+          src="https://yandex.com.tr/ads/system/context.js"
           async
           strategy="afterInteractive"
         />
