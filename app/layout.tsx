@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import WhatsAppSupportButton from "../components/WhatsAppSupportButton";
 import ProtectionProvider from "../components/ProtectionProvider";
 import { LocationProvider } from "../context/LocationContext";
 import { GoogleAnalytics } from '@next/third-parties/google';
@@ -86,6 +87,7 @@ export default function RootLayout({
                 {children}
               </main>
               <Footer />
+              <WhatsAppSupportButton />
             </LocationProvider>
           </AuthProvider>
         </ProtectionProvider>

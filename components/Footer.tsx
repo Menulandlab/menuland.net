@@ -55,6 +55,17 @@ export default function Footer() {
                   destek@menuland.net
                 </a>
               </li>
+              <li className="flex flex-col gap-0.5">
+                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">WhatsApp Destek & İletişim</span>
+                <a
+                  href="https://wa.me/908508401302?text=Merhaba,%20Menuland%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#25D366] font-semibold transition-colors text-sm text-zinc-800 flex items-center gap-1.5"
+                >
+                  <span className="text-[#25D366] font-bold">WhatsApp:</span> 0850 840 13 02
+                </a>
+              </li>
             </ul>
           </div>
 
