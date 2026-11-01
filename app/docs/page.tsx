@@ -228,7 +228,7 @@ export default function DocsHubPage() {
                 Sorunuza cevap bulamadınız mı?
               </h3>
               <p className="mt-1 text-xs sm:text-sm text-zinc-600 max-w-md">
-                Menuland ekibi hem müşterilere hem de restoran ortaklarımıza 7/24 destek sağlamaktadır.
+                Menuland ekibi hem kullanıcılarımıza hem de restoran ortaklarımıza Pazartesi – Cumartesi 09:00 – 18:00 arasında destek veriyor.
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">

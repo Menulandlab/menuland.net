@@ -96,18 +96,17 @@ export default function ContactPage() {
               <Clock className="h-4 w-4 text-[#FF4D00]" /> Destek Saatleri
             </div>
             <p className="text-zinc-500 leading-relaxed">
-              Pazartesi – Cuma: 09:00 – 18:00<br />
-              Cumartesi: 10:00 – 15:00<br />
-              (Pazar günleri e-posta yanıtlanır)
+              Pazartesi – Cumartesi: 09:00 – 18:00<br />
+              Pazar: Kapalı
             </p>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5 font-bold text-zinc-900">
-              <PhoneCall className="h-4 w-4 text-[#FF4D00]" /> Yanıt Taahhüdü
+              <PhoneCall className="h-4 w-4 text-[#FF4D00]" /> Yanıt Süresi
             </div>
             <p className="text-zinc-500 leading-relaxed">
-              İletişim kanallarımıza iletilen tüm mesaj ve destek talepleri azami <strong>24 saat</strong> içinde yetkili temsilcilerimiz tarafından yanıtlanmaktadır.
+              Mesajlarınızı çalışma saatlerimiz içinde en kısa sürede yanıtlamaya çalışıyoruz. Pazar günü ve mesai dışında gelen mesajlar bir sonraki çalışma gününde ele alınır.
             </p>
           </div>
         </div>

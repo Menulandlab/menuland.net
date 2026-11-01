@@ -4,7 +4,8 @@ import React from 'react';
 
 export default function WhatsAppSupportButton() {
   const phoneNumber = '908508401302';
-  const defaultMessage = encodeURIComponent('Merhaba, Menuland hakkında bilgi almak istiyorum.');
+  // Mesajın sonundaki kod, yazanın hangi butondan geldiğini gösterir (WEB-ALT: altbilgi).
+  const defaultMessage = encodeURIComponent('Merhaba, Menuland hakkında bilgi almak istiyorum.\n\n(Kod: WEB-BUTON)');
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${defaultMessage}`;
 
   return (
