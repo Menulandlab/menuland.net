@@ -12,7 +12,7 @@ export default function BusinessActions({ businessId, businessName }: BusinessAc
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://menuland.net/business/${businessId}`;
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : `https://www.menuland.net/business/${businessId}`;
     
     if (navigator.share) {
       try {

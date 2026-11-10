@@ -1,6 +1,12 @@
 import Link from 'next/link';
 import { ArrowLeft, Landmark } from 'lucide-react';
 
+export const metadata = {
+  title: 'KVKK Aydınlatma Metni',
+  description: 'Kişisel verilerin korunması kanunu kapsamında Menuland aydınlatma metni.',
+  alternates: { canonical: '/kvkk' },
+};
+
 export default function KvkkPage() {
   return (
     <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto">

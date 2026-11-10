@@ -3,6 +3,14 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Calendar, Compass, MapPin, Map, ArrowLeft, Ticket, Landmark, Music, TreePine, GlassWater, Landmark as Museum } from 'lucide-react';
 import YandexAdBanner from '@/components/YandexAdBanner';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Şehrini Keşfet: Restoran, Kafe ve Etkinlikler',
+  description:
+    "Bulunduğunuz il ve ilçedeki restoran, kafe ve etkinlikleri keşfedin; mekânların adresleri, güncel menüleri ve kampanyaları Menuland'de.",
+  alternates: { canonical: '/kesfet' },
+};
 
 interface DiscoveryCategory {
   id: number;

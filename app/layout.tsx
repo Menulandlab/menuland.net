@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { DEFAULT_OG_IMAGE } from "@/lib/site";
 import { AuthProvider } from "../context/AuthContext";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -35,6 +36,10 @@ export const metadata: Metadata = {
     siteName: "Menuland",
     locale: "tr_TR",
     type: "website",
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
   },
   robots: {
     index: true,

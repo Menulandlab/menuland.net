@@ -3,105 +3,60 @@ import { getBusinesses, getBusinessListingCategories } from '@/src/api/businessS
 import { getBusinessUrl, getCategoryUrl } from '@/lib/utils';
 import { getBlogPosts } from '@/src/api/blogService';
 import { getAllDocsArticles } from '@/src/data/docs-data';
+import { SITE_URL } from '@/lib/site';
 
+type Siklik = MetadataRoute.Sitemap[number]['changeFrequency'];
+
+/**
+ * Site haritası. Adresler kanonik (www) alan adıyla yazılır; menuland.net adresi yönlendirme yaptığı için kullanılmaz.
+ * "Son güncelleme" yalnızca gerçek bir tarih biliniyorsa yazılır (blog yazılarının yayın tarihi). Her derlemede o anın
+ * saatini yazmak, Google'ın bu alana güvenini düşürür.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://menuland.net';
+  const baseUrl = SITE_URL;
 
-  // 1. Statik Sayfalar
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/blog`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/kesfet`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/all-businesses`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/all-categories`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/docs`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/hakkimizda`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/iletisim`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/gizlilik-politikasi`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/kullanim-kosullari`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/kvkk`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
+  // 1. Statik sayfalar
+  const statik: Array<[string, Siklik, number]> = [
+    ['', 'daily', 1.0],
+    ['/blog', 'daily', 0.9],
+    ['/kesfet', 'daily', 0.9],
+    ['/all-businesses', 'daily', 0.9],
+    ['/all-categories', 'weekly', 0.8],
+    ['/docs', 'weekly', 0.9],
+    ['/hakkimizda', 'monthly', 0.5],
+    ['/iletisim', 'monthly', 0.5],
+    ['/gizlilik-politikasi', 'monthly', 0.5],
+    ['/kullanim-kosullari', 'monthly', 0.5],
+    ['/kvkk', 'monthly', 0.5],
   ];
+  const staticPages: MetadataRoute.Sitemap = statik.map(([yol, changeFrequency, priority]) => ({
+    url: `${baseUrl}${yol}`,
+    changeFrequency,
+    priority,
+  }));
 
-  // 2. Blog & Rehber Yazıları
+  // 2. Blog ve rehber yazıları
   const dynamicBlogPosts = await getBlogPosts();
   const blogPages: MetadataRoute.Sitemap = dynamicBlogPosts.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.date || new Date()),
+    ...(post.published_at ? { lastModified: new Date(post.published_at) } : {}),
     changeFrequency: 'weekly' as const,
     priority: 0.8,
   }));
 
-  // 3. Dokümantasyon & Bilgi Merkezi Sayfaları
-  const docsArticles = getAllDocsArticles();
-  const docsPages: MetadataRoute.Sitemap = docsArticles.map((doc) => ({
+  // 3. Kılavuz sayfaları
+  const docsPages: MetadataRoute.Sitemap = getAllDocsArticles().map((doc) => ({
     url: `${baseUrl}/docs/${doc.categorySlug}/${doc.slug}`,
-    lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.85,
   }));
 
-  // 3. Dinamik İşletmeler (Mekanlar)
+  // 4. İşletmeler (menüsü olsun olmasın hepsi; marka görünürlüğü için dizinde kalırlar)
   let businessPages: MetadataRoute.Sitemap = [];
   try {
-    const businesses = await getBusinesses({ limit: 200 });
+    const businesses = await getBusinesses({ limit: 1000 });
     businessPages = businesses.map((biz) => ({
       url: `${baseUrl}${getBusinessUrl(biz)}`,
-      lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     }));
@@ -109,13 +64,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Sitemap businesses fetch error:', error);
   }
 
-  // 4. Dinamik Kategoriler
+  // 5. Kategoriler
   let categoryPages: MetadataRoute.Sitemap = [];
   try {
     const categories = await getBusinessListingCategories();
     categoryPages = categories.map((cat) => ({
       url: `${baseUrl}${getCategoryUrl(cat)}`,
-      lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     }));

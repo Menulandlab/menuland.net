@@ -19,14 +19,24 @@ export async function GET() {
   docsCategories.forEach((cat) => {
     text += `\n### ${cat.title}\n`;
     cat.articles.forEach((art) => {
-      text += `- [${art.title}](https://menuland.net/docs/${art.categorySlug}/${art.slug}): ${art.summary}\n`;
+      text += `- [${art.title}](https://www.menuland.net/docs/${art.categorySlug}/${art.slug}): ${art.summary}\n`;
     });
   });
 
+  text += `\n## Mekân Keşfi ve Rehberler
+- [Şehrini Keşfet](https://www.menuland.net/kesfet): İl ve ilçeye göre restoran, kafe ve etkinlikler.
+- [Tüm Mekanlar](https://www.menuland.net/all-businesses): Menuland'de listelenen restoran, kafe ve mekânlar; işletme sayfalarında adres, iletişim ve varsa güncel menü.
+- [Kategoriler](https://www.menuland.net/all-categories): Kahvaltı, akşam yemeği, kahve gibi kategorilere göre mekânlar.
+- [Lezzet Rehberi ve Blog](https://www.menuland.net/blog): Şehir rehberleri ve yeme-içme yazıları.
+`;
+
   text += `\n## Resmi Bağlantılar
-- Ana Web Sitesi: https://menuland.net
-- Dokümantasyon Merkezi: https://menuland.net/docs
+- Ana Web Sitesi: https://www.menuland.net
+- Dokümantasyon Merkezi: https://www.menuland.net/docs
+- İşletmeler için: https://kurumsal.menuland.net
 - İşletme Portalı: https://isletme.menuland.net
+- iOS uygulaması: https://apps.apple.com/tr/app/menuland/id6618147785?l=tr
+- Android uygulaması: https://play.google.com/store/apps/details?id=com.mycompany.menuland
 - İletişim & Destek: destek@menuland.net
 `;
 

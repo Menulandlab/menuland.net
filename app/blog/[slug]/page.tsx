@@ -5,6 +5,7 @@ import { getBlogPostBySlug, getBlogPosts, formatBlogContent } from '@/src/api/bl
 import { ArrowLeft, Calendar, Clock, User, Share2, Tag, BookOpen } from 'lucide-react';
 import YandexAdBanner from '@/components/YandexAdBanner';
 import BlogCtaCard from '@/components/BlogCtaCard';
+import { SITE_URL, jsonLd } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 export const dynamicParams = true;
@@ -27,12 +28,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!post) {
     return {
-      title: 'Yazı Bulunamadı | Menuland',
+      title: 'Yazı Bulunamadı',
+      robots: { index: false, follow: true },
     };
   }
 
   return {
-    title: `${post.title} | Menuland Rehber`,
+    title: post.title,
+    alternates: { canonical: `/blog/${post.slug}` },
     description: post.excerpt,
     openGraph: {
       title: post.title,
@@ -53,8 +56,27 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound();
   }
 
+  const yaziUrl = `${SITE_URL}/blog/${post.slug}`;
+  const yaziJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt || undefined,
+    image: post.image ? [post.image] : undefined,
+    datePublished: post.date || undefined,
+    author: { '@type': 'Organization', name: post.author || 'Menuland Ekibi', url: SITE_URL },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Menuland',
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/images/menuland-600x200.png` },
+    },
+    mainEntityOfPage: yaziUrl,
+    inLanguage: 'tr-TR',
+  };
+
   return (
     <div className="flex flex-col gap-10 py-6 max-w-4xl mx-auto">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(yaziJsonLd) }} />
       {/* Navigasyon */}
       <div className="flex items-center justify-between">
         <Link
@@ -82,7 +104,9 @@ export default async function BlogPostPage({ params }: PageProps) {
           <span>•</span>
           <span className="flex items-center gap-1.5">
             <Calendar className="h-4 w-4 text-zinc-400" />
-            {new Date(post.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+            <time dateTime={new Date(post.date).toISOString()}>
+              {new Date(post.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </time>
           </span>
           <span>•</span>
           <span className="flex items-center gap-1.5">

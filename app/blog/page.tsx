@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getBlogPosts } from '@/src/api/blogService';
+import { DEFAULT_OG_IMAGE } from '@/lib/site';
 import { Clock, Calendar, ArrowRight, BookOpen, ArrowLeft } from 'lucide-react';
 import YandexAdBanner from '@/components/YandexAdBanner';
 
@@ -9,10 +10,12 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: 'Blog & Lezzet Rehberi | Menuland',
+  title: 'Blog ve Lezzet Rehberi',
+  alternates: { canonical: '/blog' },
   description: 'Gastronomi dünyası, restoran trendleri, dijital menü teknolojileri ve şehir lezzet rehberleri.',
   openGraph: {
-    title: 'Blog & Lezzet Rehberi | Menuland',
+    title: 'Blog ve Lezzet Rehberi | Menuland',
+    images: [DEFAULT_OG_IMAGE],
     description: 'Gastronomi dünyası, restoran trendleri ve şehir lezzet rehberleri.',
     type: 'website',
   },

@@ -2,6 +2,14 @@ import { getBusinessListingCategories } from '@/src/api/businessService';
 import Link from 'next/link';
 import { ArrowLeft, Utensils } from 'lucide-react';
 import { getCategoryUrl } from '../../lib/utils';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Mekân Kategorileri',
+  description:
+    "Kahvaltıdan akşam yemeğine, kahveden tatlıya kategorilere göre restoran ve kafeler; her kategoride güncel menüler Menuland'de.",
+  alternates: { canonical: '/all-categories' },
+};
 
 export default async function AllCategories() {
   const categories = await getBusinessListingCategories().catch(() => []);

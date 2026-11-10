@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+import { cache } from 'react';
 import { getWebPrivateClient, webPublicClient } from '../../../lib/api';
 import { fetchMenuMode, fetchFixedMenu } from '@/src/api/menuService';
 import BusinessActions from '../../../components/BusinessActions';
@@ -6,11 +8,111 @@ import Link from 'next/link';
 import Image from 'next/image';
 import BusinessGallery from '../../../components/BusinessGallery';
 import { Star, MapPin, Phone, Globe, Calendar, Tag, ShieldCheck, Heart, Share2, AlertTriangle, AlertCircle, ShoppingBag, Utensils, Compass } from 'lucide-react';
-import { extractIdFromSlug } from '../../../lib/utils';
+import { extractIdFromSlug, getBusinessUrl } from '../../../lib/utils';
+import { SITE_URL, DEFAULT_OG_IMAGE, KURUMSAL_URL, jsonLd, kisalt } from '@/lib/site';
 import YandexAdBanner from '@/components/YandexAdBanner';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+// generateMetadata ve sayfa aynı istekte aynı veriyi kullanır; API'ye her kayıt için bir kez gidilir.
+const getBusinessData = cache(async (id: string) => {
+  const res = await webPublicClient.get(`/businesses/${id}`).catch(() => null);
+  return res && res.data ? res.data : null;
+});
+
+const getMenuMode = cache(async (id: number, slug: string) => {
+  try {
+    return await fetchMenuMode(id, slug);
+  } catch {
+    return null;
+  }
+});
+
+const getFixedMenu = cache(async (id: number, slug: string) => {
+  try {
+    return await fetchFixedMenu(id, slug);
+  } catch {
+    return null;
+  }
+});
+
+/** İl ve ilçe adları (başlık, açıklama ve yapılandırılmış veri için); bulunamazsa boş döner. */
+const getPlaceNames = cache(async (cityId?: number | string | null, districtId?: number | string | null) => {
+  let il = '';
+  let ilce = '';
+  try {
+    if (cityId) {
+      const sehirler = await webPublicClient.get('/cities');
+      const liste = Array.isArray(sehirler.data) ? sehirler.data : sehirler.data?.data || [];
+      il = liste.find((s: any) => Number(s.id) === Number(cityId))?.name || '';
+      if (districtId) {
+        const ilceler = await webPublicClient.get('/districts', { params: { city_id: cityId } });
+        const ilceListesi = Array.isArray(ilceler.data) ? ilceler.data : ilceler.data?.data || [];
+        ilce = ilceListesi.find((d: any) => Number(d.id) === Number(districtId))?.name || '';
+      }
+    }
+  } catch {
+    // Ad bulunamazsa başlık yalnızca işletme adıyla kurulur.
+  }
+  return { il, ilce };
+});
+
+/** İşletmenin Menuland'de gösterilen bir menüsü var mı (günlük menüde ürün ya da sabit menüde kategori)? */
+async function menuVarMi(business: any): Promise<boolean> {
+  const mod = await getMenuMode(business.id, business.slug);
+  if (mod?.menu_mode === 'daily') return Array.isArray(mod.today_items) && mod.today_items.length > 0;
+  if (mod?.menu_mode === 'fixed') {
+    const sabit = await getFixedMenu(business.id, business.slug);
+    return Array.isArray(sabit?.data?.categories) && sabit.data.categories.length > 0;
+  }
+  return false;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id: urlParam } = await params;
+  const business = await getBusinessData(extractIdFromSlug(urlParam));
+  if (!business?.name) {
+    return { title: 'İşletme Bulunamadı', robots: { index: false, follow: true } };
+  }
+  const [{ il, ilce }, menuVar] = await Promise.all([
+    getPlaceNames(business.city_id, business.district_id),
+    menuVarMi(business),
+  ]);
+  const yer = [ilce, il].filter(Boolean).join(', ');
+  // Menüsü olmayan işletmede başlık menü vaat etmez; sayfa yine dizinde kalır.
+  const title = menuVar
+    ? `${business.name} Menü ve Fiyatları${yer ? ` · ${yer}` : ''}`
+    : `${business.name}${yer ? ` · ${yer}` : ''}`;
+  const kategoriler = (Array.isArray(business.categories) ? business.categories : [])
+    .map((k: any) => k?.name)
+    .filter(Boolean)
+    .slice(0, 3)
+    .join(', ');
+  const description = kisalt(
+    `${business.name}${yer ? ` (${yer})` : ''}${kategoriler ? `: ${kategoriler}` : ''}. ` +
+      (menuVar
+        ? "Güncel dijital menü ve fiyatlar, adres, telefon ve fotoğraflar Menuland'de."
+        : "Adres, telefon ve fotoğraflar Menuland'de."),
+    158
+  );
+  const url = getBusinessUrl(business);
+  const gorsel = business.image_url_1 || business.image_url_medium || business.image_url;
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+      siteName: 'Menuland',
+      locale: 'tr_TR',
+      images: gorsel ? [{ url: gorsel, alt: business.name }] : [DEFAULT_OG_IMAGE],
+    },
+  };
 }
 
 export default async function BusinessDetail({ params }: PageProps) {
@@ -18,13 +120,13 @@ export default async function BusinessDetail({ params }: PageProps) {
   const id = extractIdFromSlug(urlParam);
 
   // Tüm bilgileri paralel olarak çek
-  const [businessRes, commentsRes, campaignsRes] = await Promise.all([
-    webPublicClient.get(`/businesses/${id}`).catch(() => null),
+  const [businessData, commentsRes, campaignsRes] = await Promise.all([
+    getBusinessData(id),
     webPublicClient.get(`/comments/${id}`).catch(() => ({ data: [] })),
     webPublicClient.get(`/businesses/${id}/campaigns`).catch(() => ({ data: [] })),
   ]);
 
-  if (!businessRes || !businessRes.data) {
+  if (!businessData) {
     return (
       <div className="text-center py-24 flex flex-col items-center gap-4">
         <AlertCircle className="h-16 w-16 text-red-500" />
@@ -35,7 +137,7 @@ export default async function BusinessDetail({ params }: PageProps) {
     );
   }
 
-  const business = businessRes.data;
+  const business = businessData;
   const comments = Array.isArray(commentsRes.data) ? commentsRes.data : [];
   const campaigns = Array.isArray(campaignsRes.data) ? campaignsRes.data : [];
 
@@ -45,14 +147,14 @@ export default async function BusinessDetail({ params }: PageProps) {
   let fixedMenuData: any = null;
 
   try {
-    const modeRes = await fetchMenuMode(business.id, business.slug);
-    menuMode = modeRes.menu_mode || 'none';
+    const modeRes = await getMenuMode(business.id, business.slug);
+    menuMode = modeRes?.menu_mode || 'none';
 
     if (menuMode === 'daily') {
       dailyMenuData = modeRes;
     } else if (menuMode === 'fixed') {
-      const fixedRes = await fetchFixedMenu(business.id, business.slug);
-      fixedMenuData = fixedRes.data;
+      const fixedRes = await getFixedMenu(business.id, business.slug);
+      fixedMenuData = fixedRes?.data;
     }
   } catch (e) {
     console.log('Menü yüklenirken hata oluştu:', e);
@@ -81,8 +183,55 @@ export default async function BusinessDetail({ params }: PageProps) {
     }
   }
 
+  // Yapılandırılmış veri: arama motorları ve yapay zekâ modelleri sayfanın bir yeme-içme mekânını anlattığını anlasın.
+  const { il, ilce } = await getPlaceNames(business.city_id, business.district_id);
+  const sayfaUrl = `${SITE_URL}${getBusinessUrl(business)}`;
+  const menuVar =
+    (menuMode === 'daily' && Array.isArray(dailyMenuData?.today_items) && dailyMenuData.today_items.length > 0) ||
+    (menuMode === 'fixed' && Array.isArray(fixedMenuData?.categories) && fixedMenuData.categories.length > 0);
+  const enlem = Number(business.latitude);
+  const boylam = Number(business.longitude);
+  const konumVar = Number.isFinite(enlem) && Number.isFinite(boylam) && enlem !== 0 && boylam !== 0;
+  const fiyatAraligi = Number(business.price_range);
+  const isletmeJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'FoodEstablishment',
+        '@id': `${sayfaUrl}#isletme`,
+        name: business.name,
+        url: sayfaUrl,
+        description: business.description || undefined,
+        image: businessImages.length > 0 ? businessImages : undefined,
+        telephone: business.phone || undefined,
+        address: business.address
+          ? {
+              '@type': 'PostalAddress',
+              streetAddress: business.address,
+              addressLocality: ilce || undefined,
+              addressRegion: il || undefined,
+              addressCountry: 'TR',
+            }
+          : undefined,
+        geo: konumVar ? { '@type': 'GeoCoordinates', latitude: enlem, longitude: boylam } : undefined,
+        priceRange: fiyatAraligi >= 1 && fiyatAraligi <= 4 ? '₺'.repeat(fiyatAraligi) : undefined,
+        hasMenu: menuVar ? `${sayfaUrl}#menu` : undefined,
+        sameAs: business.instagram_url ? [business.instagram_url] : undefined,
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: `${SITE_URL}/` },
+          { '@type': 'ListItem', position: 2, name: 'Tüm Mekanlar', item: `${SITE_URL}/all-businesses` },
+          { '@type': 'ListItem', position: 3, name: business.name, item: sayfaUrl },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="flex flex-col gap-8 py-4">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(isletmeJsonLd) }} />
       {/* Back button & Actions */}
       <div className="flex items-center justify-between">
         <Link href="/" className="text-sm font-semibold text-[#FF4D00] flex items-center gap-1">
@@ -137,6 +286,17 @@ export default async function BusinessDetail({ params }: PageProps) {
                 <span>Instagram'da Gör</span>
               </a>
             )}
+            {konumVar && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${enlem},${boylam}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs text-zinc-600 hover:text-[#FF4D00]"
+              >
+                <MapPin className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+                <span>Haritada Gör</span>
+              </a>
+            )}
           </div>
         </div>
       </section>
@@ -165,7 +325,7 @@ export default async function BusinessDetail({ params }: PageProps) {
         <div className="lg:col-span-2 lg:order-1 flex flex-col gap-8">
           
           {/* Menu Section */}
-          <section className="rounded-3xl border border-gray-100 bg-white p-6 sm:p-8 flex flex-col gap-6">
+          <section id="menu" className="rounded-3xl border border-gray-100 bg-white p-6 sm:p-8 flex flex-col gap-6">
             <h2 className="text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
               <Utensils className="h-6 w-6 text-[#FF4D00]" /> Dijital QR Menü
             </h2>
@@ -258,10 +418,19 @@ export default async function BusinessDetail({ params }: PageProps) {
               </div>
             )}
 
-            {menuMode === 'none' && (
+            {/* Menü yoksa ya da boşsa (kategori veya ürün yoksa) bilgi ve işletme sahibine davet gösterilir. */}
+            {!menuVar && (
               <div className="text-center py-12 text-zinc-500 flex flex-col items-center gap-2">
                 <Compass className="h-8 w-8 text-zinc-300" />
                 <p>Bu işletmenin menüsü henüz yüklenmedi veya güncelleniyor.</p>
+                <a
+                  href={`${KURUMSAL_URL}/?utm_source=menuland.net&utm_medium=isletme-sayfasi`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 text-xs font-semibold text-[#FF4D00] hover:underline"
+                >
+                  Bu işletmenin sahibi misiniz? Menünüzü Menuland&apos;e ekleyin.
+                </a>
               </div>
             )}
           </section>

@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import DocsSidebar from '@/components/docs/DocsSidebar';
 import DocsArticle from '@/components/docs/DocsArticle';
+import { DEFAULT_OG_IMAGE } from '@/lib/site';
 import {
   getDocArticle,
   getAllDocsArticles,
@@ -30,14 +31,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!article) {
     return {
-      title: 'Kılavuz Bulunamadı | Menuland',
+      title: 'Kılavuz Bulunamadı',
+      robots: { index: false, follow: true },
     };
   }
 
-  const pageUrl = `https://menuland.net/docs/${article.categorySlug}/${article.slug}`;
+  const pageUrl = `https://www.menuland.net/docs/${article.categorySlug}/${article.slug}`;
 
   return {
-    title: `${article.title} | Menuland Kılavuz`,
+    title: `${article.title} · Kılavuz`,
     description: article.summary,
     keywords: article.keywords,
     alternates: {
@@ -50,8 +52,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: 'Menuland',
       locale: 'tr_TR',
       type: 'article',
+      images: [DEFAULT_OG_IMAGE],
       publishedTime: '2026-09-01T00:00:00.000Z',
-      modifiedTime: new Date().toISOString(),
     },
     twitter: {
       card: 'summary_large_image',
@@ -70,7 +72,7 @@ export default async function DocDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const pageUrl = `https://menuland.net/docs/${article.categorySlug}/${article.slug}`;
+  const pageUrl = `https://www.menuland.net/docs/${article.categorySlug}/${article.slug}`;
 
   // JSON-LD Schemas: TechArticle + FAQPage
   const schemas: any[] = [
@@ -86,15 +88,15 @@ export default async function DocDetailPage({ params }: PageProps) {
       author: {
         '@type': 'Organization',
         name: 'Menuland Ekibi',
-        url: 'https://menuland.net',
+        url: 'https://www.menuland.net',
       },
       publisher: {
         '@type': 'Organization',
         name: 'Menuland',
-        url: 'https://menuland.net',
+        url: 'https://www.menuland.net',
         logo: {
           '@type': 'ImageObject',
-          url: 'https://menuland.net/images/menuland-600x200.png',
+          url: 'https://www.menuland.net/images/menuland-600x200.png',
         },
       },
       keywords: article.keywords.join(', '),

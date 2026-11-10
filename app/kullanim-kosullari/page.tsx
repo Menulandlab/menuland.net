@@ -1,6 +1,12 @@
 import Link from 'next/link';
 import { ArrowLeft, Scale } from 'lucide-react';
 
+export const metadata = {
+  title: 'Kullanım Koşulları',
+  description: 'Menuland web sitesi ve mobil uygulamasının kullanım koşulları.',
+  alternates: { canonical: '/kullanim-kosullari' },
+};
+
 export default function TermsPage() {
   return (
     <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto">

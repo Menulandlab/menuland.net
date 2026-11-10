@@ -13,9 +13,10 @@ import {
 } from 'lucide-react';
 import DocsSidebar from '@/components/docs/DocsSidebar';
 import { docsCategories, getAllDocsArticles } from '@/src/data/docs-data';
+import { DEFAULT_OG_IMAGE } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Kullanım Kılavuzu ve Bilgi Merkezi | Menuland',
+  title: 'Kullanım Kılavuzu ve Bilgi Merkezi',
   description:
     'Menuland mobil uygulaması kullanımı, Gel Al sipariş verme, PuanLand sadakat puanı ve restoranlar için yeni yönetmeliğe uygun dijital QR menü yönetim rehberi.',
   keywords: [
@@ -28,14 +29,15 @@ export const metadata: Metadata = {
     'dijital menü nasıl açılır',
   ],
   alternates: {
-    canonical: 'https://menuland.net/docs',
+    canonical: 'https://www.menuland.net/docs',
   },
   openGraph: {
     title: 'Menuland Kullanım Kılavuzu ve Bilgi Merkezi',
     description:
       'Hem müşteriler hem de restoranlar için adım adım rehberler, Gel Al sipariş süreçleri ve QR menü yönetimi.',
-    url: 'https://menuland.net/docs',
+    url: 'https://www.menuland.net/docs',
     siteName: 'Menuland',
+    images: [DEFAULT_OG_IMAGE],
     locale: 'tr_TR',
     type: 'website',
   },
@@ -57,19 +59,19 @@ export default function DocsHubPage() {
     name: 'Menuland Kullanım Kılavuzu ve Bilgi Merkezi',
     description:
       'Menuland mobil uygulama özellikleri, Gel Al siparişleri ve restoran QR menü mevzuat rehberleri.',
-    url: 'https://menuland.net/docs',
+    url: 'https://www.menuland.net/docs',
     publisher: {
       '@type': 'Organization',
       name: 'Menuland',
-      url: 'https://menuland.net',
-      logo: 'https://menuland.net/images/menuland-600x200.png',
+      url: 'https://www.menuland.net',
+      logo: 'https://www.menuland.net/images/menuland-600x200.png',
     },
     hasPart: allArticles.map((art) => ({
       '@type': 'TechArticle',
       name: art.title,
       headline: art.title,
       description: art.summary,
-      url: `https://menuland.net/docs/${art.categorySlug}/${art.slug}`,
+      url: `https://www.menuland.net/docs/${art.categorySlug}/${art.slug}`,
     })),
   };
 

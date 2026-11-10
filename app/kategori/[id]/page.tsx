@@ -2,7 +2,8 @@ import { getBusinesses, getBusinessListingCategories } from '@/src/api/businessS
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Star, MapPin, Compass, ArrowLeft, Utensils } from 'lucide-react';
-import { getBusinessUrl, extractIdFromSlug } from '../../../lib/utils';
+import { getBusinessUrl, extractIdFromSlug, getCategoryUrl } from '../../../lib/utils';
+import { DEFAULT_OG_IMAGE } from '@/lib/site';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -16,7 +17,9 @@ export async function generateMetadata({ params }: PageProps) {
   const categoryName = activeCategory?.name || 'Mekanlar';
   
   return {
-    title: `${categoryName} Menüleri ve Fiyatları | Menuland`,
+    title: `${categoryName} Menüleri ve Fiyatları`,
+    alternates: activeCategory ? { canonical: getCategoryUrl(activeCategory) } : undefined,
+    openGraph: { title: `${categoryName} Menüleri ve Fiyatları | Menuland`, images: [DEFAULT_OG_IMAGE] },
     description: `En popüler ${categoryName} mekanlarının güncel dijital menülerini, fiyatlarını, adres ve telefon bilgilerini Menuland'de inceleyin.`,
   };
 }

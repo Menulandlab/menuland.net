@@ -3,6 +3,14 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Star, MapPin, Compass, ArrowLeft, Utensils } from 'lucide-react';
 import { getBusinessUrl } from '../../lib/utils';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Tüm Restoran ve Kafeler',
+  description:
+    "Menuland'de listelenen restoran, kafe ve mekânların tamamı: adresler, iletişim bilgileri ve varsa güncel dijital menüler.",
+  alternates: { canonical: '/all-businesses' },
+};
 
 interface PageProps {
   searchParams: Promise<{ search?: string }>;

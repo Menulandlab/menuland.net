@@ -4,6 +4,43 @@ import Link from 'next/link';
 import { Search, Star, MapPin, Utensils, Compass, BookOpen, ArrowRight } from 'lucide-react';
 import { getBusinessUrl, getCategoryUrl } from '../lib/utils';
 import { blogPosts } from '@/src/data/blog-posts';
+import type { Metadata } from 'next';
+import { SITE_URL, APP_STORE_URL, GOOGLE_PLAY_URL, KURUMSAL_URL, jsonLd } from '@/lib/site';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
+
+// Kuruluş ve web sitesi bilgisi: Google ve yapay zekâ modelleri Menuland'i tek bir marka olarak tanısın.
+const anaSayfaJsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${SITE_URL}/#kurulus`,
+      name: 'Menuland',
+      url: SITE_URL,
+      logo: `${SITE_URL}/images/menuland-600x200.png`,
+      email: 'info@menuland.net',
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: '+90-850-840-13-02',
+        contactType: 'customer support',
+        areaServed: 'TR',
+        availableLanguage: 'Turkish',
+      },
+      sameAs: [APP_STORE_URL, GOOGLE_PLAY_URL, KURUMSAL_URL],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#site`,
+      name: 'Menuland',
+      url: SITE_URL,
+      inLanguage: 'tr-TR',
+      publisher: { '@id': `${SITE_URL}/#kurulus` },
+    },
+  ],
+};
 import YandexAdBanner from '@/components/YandexAdBanner';
 
 export default async function Home() {
@@ -26,6 +63,7 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col gap-16 py-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(anaSayfaJsonLd) }} />
       
       {/* Hero Section */}
       <section className="text-center py-12 px-4 bg-gradient-to-b from-[#FF4D00]/5 to-transparent rounded-3xl">

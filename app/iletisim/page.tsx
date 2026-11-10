@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { ArrowLeft, Mail, MessageSquare, ShieldAlert, MapPin, Clock, PhoneCall, CheckCircle2 } from 'lucide-react';
 
 export const metadata = {
-  title: 'İletişim - Bize Ulaşın | Menuland',
+  title: 'İletişim - Bize Ulaşın',
+  alternates: { canonical: '/iletisim' },
   description: 'Menuland kullanıcı ve işletme destek ekibi iletişim kanalları, kurumsal adres ve geri bildirim bilgileri.',
 };
 

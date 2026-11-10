@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title,
       description: desc,
-      url: `https://menuland.net/u/${encodeURIComponent(username)}`,
+      url: `https://www.menuland.net/u/${encodeURIComponent(username)}`,
       siteName: 'Menuland',
       images: profile.avatar ? [{ url: profile.avatar, width: 800, height: 800, alt: name }] : undefined,
       type: 'profile',

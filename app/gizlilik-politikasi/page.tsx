@@ -1,6 +1,12 @@
 import Link from 'next/link';
 import { ArrowLeft, FileKey } from 'lucide-react';
 
+export const metadata = {
+  title: 'Gizlilik Politikası',
+  description: 'Menuland web sitesi ve mobil uygulamasında hangi verilerin neden işlendiği, çerezler ve haklarınız.',
+  alternates: { canonical: '/gizlilik-politikasi' },
+};
+
 export default function PrivacyPage() {
   return (
     <div className="flex flex-col gap-8 py-4 max-w-4xl mx-auto">

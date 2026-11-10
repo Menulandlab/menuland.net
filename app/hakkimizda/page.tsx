@@ -3,6 +3,7 @@ import { ArrowLeft, Shield, Info, Building2, Award, FileText, CheckCircle2 } fro
 
 export const metadata = {
   title: 'Hakkımızda - Kurumsal Bilgiler ve Vizyonumuz',
+  alternates: { canonical: '/hakkimizda' },
   description: 'Menuland platformunun kurumsal yapısı, yayıncılık ilkeleri, misyonu ve yeme-içme sektöründeki teknolojik vizyonu hakkında detaylı bilgiler.',
 };
 
