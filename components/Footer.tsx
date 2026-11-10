@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import CookiePreferencesButton from './CookiePreferencesButton';
 
 export default function Footer() {
   return (
@@ -35,6 +36,7 @@ export default function Footer() {
               <li><Link href="/kullanim-kosullari" className="hover:text-[#FF4D00] transition-colors">Kullanım Koşulları</Link></li>
               <li><Link href="/gizlilik-politikasi" className="hover:text-[#FF4D00] transition-colors">Gizlilik Politikası</Link></li>
               <li><Link href="/kvkk" className="hover:text-[#FF4D00] transition-colors">KVKK Aydınlatma Metni</Link></li>
+              <li><CookiePreferencesButton /></li>
               <li><Link href="/iletisim" className="hover:text-[#FF4D00] transition-colors">İletişim</Link></li>
             </ul>
           </div>

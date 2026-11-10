@@ -33,7 +33,7 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-5 space-y-2">
             <li><strong>Konum Bilgisi:</strong> Size en yakın restoranları, popüler mekanları ve kültürel etkinlikleri gösterebilmemiz için konum seçiminize (şehir/ilçe) izin vermeniz halinde lokasyon verileriniz işlenir.</li>
             <li><strong>Çerezler (Cookies):</strong> Dil seçiminiz, konum tercihiniz ve tarayıcı oturumlarınızın stabil çalışması için temel çerezler kullanılır.</li>
-            <li><strong>Kullanım Analitiği:</strong> Platform performansını iyileştirmek adına anonimleştirilmiş cihaz bilgileri ve sayfa ziyaret istatistikleri toplanır.</li>
+            <li><strong>Kullanım Analitiği:</strong> Yalnızca çerez tercihlerinden onay vermeniz hâlinde, sitenin nasıl kullanıldığını anlamak için Google Analytics ile sayfa ziyaret istatistikleri toplanır.</li>
           </ul>
         </section>
 
@@ -58,6 +58,9 @@ export default function PrivacyPage() {
             </li>
             <li>
               Kullanıcılar, tarayıcı ayarlarından çerez tercihini diledikleri zaman değiştirebilir veya üçüncü taraf satıcıların kişiselleştirilmiş reklamcılık için çerez kullanımını <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-[#FF4D00] font-semibold underline">aboutads.info</a> ya da ilgili reklam sağlayıcılarının gizlilik portalları üzerinden devre dışı bırakabilirler.
+            </li>
+            <li>
+              Analiz (Google Analytics) ve reklam (Yandex) çerezleri yalnızca onay vermeniz hâlinde kullanılır. Tercihinizi sayfanın altındaki <strong>Çerez Tercihleri</strong> bağlantısından istediğiniz zaman değiştirebilirsiniz.
             </li>
           </ul>
         </section>

@@ -7,7 +7,7 @@ import Footer from "../components/Footer";
 import WhatsAppSupportButton from "../components/WhatsAppSupportButton";
 import ProtectionProvider from "../components/ProtectionProvider";
 import { LocationProvider } from "../context/LocationContext";
-import { GoogleAnalytics } from '@next/third-parties/google';
+import CookieConsent from "../components/CookieConsent";
 import Script from 'next/script';
 
 const geistSans = Geist({
@@ -61,24 +61,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const gaId = process.env.NEXT_PUBLIC_GA_ID;
-
   return (
     <html
       lang="tr"
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-white text-zinc-900">
-        {/* Yandex.RTB */}
+        {/* Yandex.RTB: burada yalnızca reklam kuyruğu hazırlanır; reklam betiği çerez onayından sonra yüklenir (CookieConsent). */}
         <Script id="yandex-rtb-init" strategy="afterInteractive">
           {`window.yaContextCb=window.yaContextCb||[]`}
         </Script>
-        <Script
-          id="yandex-rtb-context"
-          src="https://yandex.com.tr/ads/system/context.js"
-          async
-          strategy="afterInteractive"
-        />
         <ProtectionProvider>
           <AuthProvider>
             <LocationProvider>
@@ -91,7 +83,7 @@ export default function RootLayout({
             </LocationProvider>
           </AuthProvider>
         </ProtectionProvider>
-        {gaId && <GoogleAnalytics gaId={gaId} />}
+        <CookieConsent />
       </body>
     </html>
   );

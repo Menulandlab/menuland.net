@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { useCerezTercihi } from '../lib/cerezTercihi';
 
 declare global {
   interface Window {
@@ -26,8 +27,11 @@ export default function YandexAdBanner({
   label = 'Sponsorlu Reklam',
 }: YandexAdBannerProps) {
   const targetId = containerId || `yandex_rtb_${blockId}`;
+  const { tercih } = useCerezTercihi();
+  const reklamIzni = tercih?.reklam === true;
 
   useEffect(() => {
+    if (!reklamIzni) return;
     // Next.js SPA içi dinamik sayfa geçişlerinde konteyner boşsa reklamı render et
     try {
       window.yaContextCb = window.yaContextCb || [];
@@ -47,7 +51,10 @@ export default function YandexAdBanner({
         console.warn('Yandex Ads load error:', err);
       }
     }
-  }, [blockId, targetId]);
+  }, [blockId, targetId, reklamIzni]);
+
+  // Reklam çerezlerine onay verilmediyse (ya da tercih henüz bilinmiyorsa) boş reklam kutusu gösterilmez.
+  if (!reklamIzni) return null;
 
   return (
     <div
