@@ -4,6 +4,7 @@ import { getBusinessUrl, getCategoryUrl } from '@/lib/utils';
 import { getBlogPosts } from '@/src/api/blogService';
 import { getAllDocsArticles } from '@/src/data/docs-data';
 import { SITE_URL } from '@/lib/site';
+import { etkinSehirler, sehirVerisi } from '@/lib/sehirSayfalari';
 
 type Siklik = MetadataRoute.Sitemap[number]['changeFrequency'];
 
@@ -77,5 +78,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Sitemap categories fetch error:', error);
   }
 
-  return [...staticPages, ...docsPages, ...blogPages, ...categoryPages, ...businessPages];
+  // 6. Şehir, ilçe ve şehir × kategori sayfaları. Yalnızca sayfası oluşan (en az 3 işletmeli) ilçe ve kategoriler girer.
+  const sehirPages: MetadataRoute.Sitemap = [];
+  try {
+    const sehirler = await etkinSehirler();
+    for (const s of sehirler) {
+      const veri = await sehirVerisi(s.slug);
+      if (!veri) continue;
+      sehirPages.push({ url: `${baseUrl}/${s.slug}`, changeFrequency: 'weekly', priority: 0.85 });
+      for (const d of veri.ilceler) {
+        sehirPages.push({ url: `${baseUrl}/${s.slug}/${d.slug}`, changeFrequency: 'weekly', priority: 0.8 });
+      }
+      for (const k of veri.kategoriler) {
+        sehirPages.push({ url: `${baseUrl}/${s.slug}/${k.slug}`, changeFrequency: 'weekly', priority: 0.75 });
+      }
+    }
+  } catch (error) {
+    console.error('Sitemap city pages error:', error);
+  }
+
+  return [...staticPages, ...docsPages, ...blogPages, ...sehirPages, ...categoryPages, ...businessPages];
 }

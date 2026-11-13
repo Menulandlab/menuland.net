@@ -11,6 +11,7 @@ import { Star, MapPin, Phone, Globe, Calendar, Tag, ShieldCheck, Heart, Share2, 
 import { extractIdFromSlug, getBusinessUrl } from '../../../lib/utils';
 import { SITE_URL, DEFAULT_OG_IMAGE, KURUMSAL_URL, jsonLd, kisalt } from '@/lib/site';
 import YandexAdBanner from '@/components/YandexAdBanner';
+import { isletmeninSayfalari } from '@/lib/sehirSayfalari';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -184,8 +185,22 @@ export default async function BusinessDetail({ params }: PageProps) {
   }
 
   // Yapılandırılmış veri: arama motorları ve yapay zekâ modelleri sayfanın bir yeme-içme mekânını anlattığını anlasın.
-  const { il, ilce } = await getPlaceNames(business.city_id, business.district_id);
+  const [{ il, ilce }, bulunduguSayfalar] = await Promise.all([
+    getPlaceNames(business.city_id, business.district_id),
+    isletmeninSayfalari(business),
+  ]);
   const sayfaUrl = `${SITE_URL}${getBusinessUrl(business)}`;
+  // Gezinti izi: şehir ve ilçe sayfası varsa Ana Sayfa > Ordu > Altınordu > İşletme; yoksa eskisi gibi Tüm Mekanlar.
+  const izParcalari: Array<{ ad: string; url: string }> = [{ ad: 'Ana Sayfa', url: `${SITE_URL}/` }];
+  if (bulunduguSayfalar.sehir) {
+    izParcalari.push({ ad: bulunduguSayfalar.sehir.ad, url: `${SITE_URL}${bulunduguSayfalar.sehir.yol}` });
+    if (bulunduguSayfalar.ilce) {
+      izParcalari.push({ ad: bulunduguSayfalar.ilce.ad, url: `${SITE_URL}${bulunduguSayfalar.ilce.yol}` });
+    }
+  } else {
+    izParcalari.push({ ad: 'Tüm Mekanlar', url: `${SITE_URL}/all-businesses` });
+  }
+  izParcalari.push({ ad: business.name, url: sayfaUrl });
   const menuVar =
     (menuMode === 'daily' && Array.isArray(dailyMenuData?.today_items) && dailyMenuData.today_items.length > 0) ||
     (menuMode === 'fixed' && Array.isArray(fixedMenuData?.categories) && fixedMenuData.categories.length > 0);
@@ -220,11 +235,12 @@ export default async function BusinessDetail({ params }: PageProps) {
       },
       {
         '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: `${SITE_URL}/` },
-          { '@type': 'ListItem', position: 2, name: 'Tüm Mekanlar', item: `${SITE_URL}/all-businesses` },
-          { '@type': 'ListItem', position: 3, name: business.name, item: sayfaUrl },
-        ],
+        itemListElement: izParcalari.map((p, sira) => ({
+          '@type': 'ListItem',
+          position: sira + 1,
+          name: p.ad,
+          item: p.url,
+        })),
       },
     ],
   };
@@ -477,6 +493,29 @@ export default async function BusinessDetail({ params }: PageProps) {
         </div>
 
       </div>
+
+      {/* Bu mekânın yer aldığı ilçe, kategori ve şehir sayfaları */}
+      {bulunduguSayfalar.sehir && (
+        <nav aria-label="Bu mekânın yer aldığı sayfalar" className="flex flex-col gap-3 rounded-3xl border border-gray-100 bg-white p-6">
+          <h2 className="text-base font-bold text-zinc-900">Bu mekânın yer aldığı sayfalar</h2>
+          <ul className="flex flex-wrap gap-2">
+            {[
+              ...(bulunduguSayfalar.ilce ? [{ ad: `${bulunduguSayfalar.ilce.ad} Mekanları`, yol: bulunduguSayfalar.ilce.yol }] : []),
+              ...bulunduguSayfalar.kategoriler.slice(0, 6).map((k) => ({ ad: k.baslik, yol: k.yol })),
+              { ad: `${bulunduguSayfalar.sehir.ad} Mekanları`, yol: bulunduguSayfalar.sehir.yol },
+            ].map((b) => (
+              <li key={b.yol}>
+                <Link
+                  href={b.yol}
+                  className="inline-flex rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm text-zinc-700 transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+                >
+                  {b.ad}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
 
     </div>
   );

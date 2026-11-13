@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Star, MapPin, Compass, ArrowLeft, Utensils } from 'lucide-react';
 import { getBusinessUrl, extractIdFromSlug, getCategoryUrl } from '../../../lib/utils';
 import { DEFAULT_OG_IMAGE } from '@/lib/site';
+import { kategorininSehirSayfalari } from '@/lib/sehirSayfalari';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -45,7 +46,10 @@ export default async function CategoryPage({ params }: PageProps) {
   if (districtId) businessParams.district_id = districtId;
 
   // Seçili kategoriye ve konuma özel işletmeleri çek
-  const businesses = await getBusinesses(businessParams).catch(() => []);
+  const [businesses, sehirSayfalari] = await Promise.all([
+    getBusinesses(businessParams).catch(() => []),
+    kategorininSehirSayfalari(Number(id)),
+  ]);
 
   // SEO için açıklama metni oluştur
   const seoDescription = `En popüler ${categoryName} mekanlarının güncel dijital menüleri ve yemek fiyatları Menuland'de. ${cityName ? `${cityName} (${districtName || 'tüm ilçeler'}) bölgesindeki` : 'Tüm Türkiye genelindeki'} en iyi restoranları, kafeleri ve yemek noktalarını hemen keşfedin, fiyat listelerini karşılaştırın.`;
@@ -79,6 +83,22 @@ export default async function CategoryPage({ params }: PageProps) {
           )}
         </p>
       </div>
+
+      {/* Bu kategorinin şehir sayfaları (örneğin "Ordu Kahvaltı Mekanları") */}
+      {sehirSayfalari.length > 0 && (
+        <nav aria-label="Şehre göre" className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="font-semibold text-zinc-700">Şehre göre:</span>
+          {sehirSayfalari.map((s) => (
+            <Link
+              key={s.yol}
+              href={s.yol}
+              className="rounded-full border border-gray-200 bg-white px-3 py-1 text-zinc-700 transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+            >
+              {s.baslik}
+            </Link>
+          ))}
+        </nav>
+      )}
 
       {/* Business Listing */}
       {businesses.length === 0 ? (
