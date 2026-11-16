@@ -1,0 +1,27 @@
+name: Gece yayını (Vercel)
+
+# Türkiye geneline açılış (16.11.2026). İl, ilçe ve kategori sayfaları ile site haritası derlemede üretiliyor;
+# eşiği yeni geçen bir il ya da kategori ancak yeni bir yayında sayfa alır. Bu iş her gece 02.30'da (Türkiye saati)
+# Vercel'de yeniden yayın tetikler. VERCEL_DEPLOY_HOOK gizli değeri yoksa hiçbir şey yapmadan biter.
+on:
+  schedule:
+    - cron: '30 23 * * *' # 23.30 UTC = 02.30 Türkiye saati
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  yayin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vercel Deploy Hook'u tetikle
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "VERCEL_DEPLOY_HOOK tanımlı değil; yayın tetiklenmedi."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK" > /dev/null
+          echo "Yayın tetiklendi."

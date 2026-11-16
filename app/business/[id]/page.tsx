@@ -6,10 +6,12 @@ import BusinessActions from '../../../components/BusinessActions';
 import ReservationSection from '../../../components/ReservationSection';
 import Link from 'next/link';
 import Image from 'next/image';
+import { notFound } from 'next/navigation';
 import BusinessGallery from '../../../components/BusinessGallery';
-import { Star, MapPin, Phone, Globe, Calendar, Tag, ShieldCheck, Heart, Share2, AlertTriangle, AlertCircle, ShoppingBag, Utensils, Compass } from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Calendar, Tag, ShieldCheck, Heart, Share2, AlertTriangle, ShoppingBag, Utensils, Compass } from 'lucide-react';
 import { extractIdFromSlug, getBusinessUrl } from '../../../lib/utils';
-import { SITE_URL, DEFAULT_OG_IMAGE, KURUMSAL_URL, jsonLd, kisalt } from '@/lib/site';
+import { SITE_URL, DEFAULT_OG_IMAGE, KURUMSAL_URL, jsonLd, kisalt, whatsappBaglantisi } from '@/lib/site';
+import { GezintiIzi } from '@/components/SehirSayfasi';
 import YandexAdBanner from '@/components/YandexAdBanner';
 import { isletmeninSayfalari } from '@/lib/sehirSayfalari';
 
@@ -18,9 +20,11 @@ interface PageProps {
 }
 
 // generateMetadata ve sayfa aynı istekte aynı veriyi kullanır; API'ye her kayıt için bir kez gidilir.
+// API bilinmeyen ya da kaldırılmış işletmede 200 ile {success: false} döndürüyor; bu yanıt "işletme yok" sayılır.
 const getBusinessData = cache(async (id: string) => {
   const res = await webPublicClient.get(`/businesses/${id}`).catch(() => null);
-  return res && res.data ? res.data : null;
+  const veri = res && res.data ? res.data : null;
+  return veri && veri.success !== false && veri.name ? veri : null;
 });
 
 const getMenuMode = cache(async (id: number, slug: string) => {
@@ -77,6 +81,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!business?.name) {
     return { title: 'İşletme Bulunamadı', robots: { index: false, follow: true } };
   }
+  // Pasif (listeden kaldırılmış) işletmenin sayfası açılmaya devam eder ama dizinden çıkar (16.11.2026).
+  const pasif = business.is_active !== undefined && business.is_active !== null && Number(business.is_active) === 0;
   const [{ il, ilce }, menuVar] = await Promise.all([
     getPlaceNames(business.city_id, business.district_id),
     menuVarMi(business),
@@ -104,6 +110,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: { canonical: url },
+    ...(pasif ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title,
       description,
@@ -128,14 +135,7 @@ export default async function BusinessDetail({ params }: PageProps) {
   ]);
 
   if (!businessData) {
-    return (
-      <div className="text-center py-24 flex flex-col items-center gap-4">
-        <AlertCircle className="h-16 w-16 text-red-500" />
-        <h1 className="text-2xl font-bold">İşletme Bulunamadı</h1>
-        <p className="text-zinc-500">Aradığınız işletme sisteme kayıtlı değil veya silinmiş.</p>
-        <Link href="/" className="rounded-full bg-[#FF4D00] px-6 py-2 text-xs font-bold text-white">Ana Sayfaya Dön</Link>
-      </div>
-    );
+    notFound();
   }
 
   const business = businessData;
@@ -204,6 +204,8 @@ export default async function BusinessDetail({ params }: PageProps) {
   const menuVar =
     (menuMode === 'daily' && Array.isArray(dailyMenuData?.today_items) && dailyMenuData.today_items.length > 0) ||
     (menuMode === 'fixed' && Array.isArray(fixedMenuData?.categories) && fixedMenuData.categories.length > 0);
+  // Sokak adresi 16.11.2026 göçüyle gelen "adres" alanında; eski kayıtlarda "address" de olabilir.
+  const adres: string | null = business.adres || business.address || null;
   const enlem = Number(business.latitude);
   const boylam = Number(business.longitude);
   const konumVar = Number.isFinite(enlem) && Number.isFinite(boylam) && enlem !== 0 && boylam !== 0;
@@ -219,10 +221,10 @@ export default async function BusinessDetail({ params }: PageProps) {
         description: business.description || undefined,
         image: businessImages.length > 0 ? businessImages : undefined,
         telephone: business.phone || undefined,
-        address: business.address
+        address: adres
           ? {
               '@type': 'PostalAddress',
-              streetAddress: business.address,
+              streetAddress: adres,
               addressLocality: ilce || undefined,
               addressRegion: il || undefined,
               addressCountry: 'TR',
@@ -248,11 +250,20 @@ export default async function BusinessDetail({ params }: PageProps) {
   return (
     <div className="flex flex-col gap-8 py-4">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(isletmeJsonLd) }} />
-      {/* Back button & Actions */}
-      <div className="flex items-center justify-between">
-        <Link href="/" className="text-sm font-semibold text-[#FF4D00] flex items-center gap-1">
-          &larr; Geri Dön
-        </Link>
+      {/* Gezinti izi (yapılandırılmış veriyle aynı) ve işlemler */}
+      <div className="flex items-center justify-between gap-3">
+        <GezintiIzi
+          parcalar={[
+            { ad: 'Ana Sayfa', yol: '/' },
+            ...(bulunduguSayfalar.sehir
+              ? [
+                  { ad: bulunduguSayfalar.sehir.ad, yol: bulunduguSayfalar.sehir.yol },
+                  ...(bulunduguSayfalar.ilce ? [{ ad: bulunduguSayfalar.ilce.ad, yol: bulunduguSayfalar.ilce.yol }] : []),
+                ]
+              : [{ ad: 'Tüm Mekanlar', yol: '/all-businesses' }]),
+            { ad: business.name },
+          ]}
+        />
         <BusinessActions businessId={business.id} businessName={business.name} />
       </div>
 
@@ -279,10 +290,10 @@ export default async function BusinessDetail({ params }: PageProps) {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 border-t border-gray-100 pt-6">
-            {business.address && (
+            {adres && (
               <div className="flex items-start gap-2 text-xs text-zinc-600">
                 <MapPin className="h-4 w-4 text-zinc-400 flex-shrink-0" />
-                <span className="line-clamp-2">{business.address}</span>
+                <span className="line-clamp-2">{adres}</span>
               </div>
             )}
             {business.phone && (
@@ -439,13 +450,25 @@ export default async function BusinessDetail({ params }: PageProps) {
               <div className="text-center py-12 text-zinc-500 flex flex-col items-center gap-2">
                 <Compass className="h-8 w-8 text-zinc-300" />
                 <p>Bu işletmenin menüsü henüz yüklenmedi veya güncelleniyor.</p>
+                {/* Sahiplenme çağrısı (16.11.2026): mesajda işletmenin adı ve numarası gider; Akın elle doğrular. */}
+                <a
+                  href={whatsappBaglantisi(
+                    `Merhaba, ${business.name} (#${business.id}) işletmesinin sahibiyim. Menümü Menuland'e eklemek istiyorum.`,
+                    'WEB-SAHIPLEN'
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 rounded-full bg-[#FF4D00] px-5 py-2 text-xs font-bold text-white hover:brightness-105"
+                >
+                  Bu işletme sizin mi? Menünüzü ücretsiz ekleyelim
+                </a>
                 <a
                   href={`${KURUMSAL_URL}/?utm_source=menuland.net&utm_medium=isletme-sayfasi`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-1 text-xs font-semibold text-[#FF4D00] hover:underline"
                 >
-                  Bu işletmenin sahibi misiniz? Menünüzü Menuland&apos;e ekleyin.
+                  İşletmeler için Menuland
                 </a>
               </div>
             )}
@@ -516,6 +539,19 @@ export default async function BusinessDetail({ params }: PageProps) {
           </ul>
         </nav>
       )}
+
+      {/* Bilgi düzeltme ya da kaldırma isteği (16.11.2026): elle girilen işletmeler için itiraz yolu. */}
+      <p className="text-center text-xs text-zinc-500">
+        Bu sayfadaki bilgi yanlış mı ya da işletme sahibi olarak kaldırılmasını mı istiyorsunuz?{' '}
+        <a
+          href={whatsappBaglantisi(`Merhaba, ${business.name} (#${business.id}) sayfasındaki bilgiyle ilgili yazıyorum.`, 'WEB-DUZELT')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-[#FF4D00] hover:underline"
+        >
+          Bize yazın
+        </a>
+      </p>
 
     </div>
   );

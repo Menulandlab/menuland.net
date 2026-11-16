@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import { MapPin, Utensils } from 'lucide-react';
 import {
-  etkinSehirler,
+  acikSehirler,
   sehirVerisi,
   kategoriBasligi,
   bulunmaEki,
@@ -21,7 +21,7 @@ import { GezintiIzi, IsletmeIzgarasi, BaglantiCipleri, EkosistemBolumu } from '@
 export const revalidate = 3600;
 // Yalnızca derlemede üretilen adresler vardır; bilinmeyen adresler gerçek 404 alır (sitenin kök loading.tsx'i
 // yüzünden sayfa içinden çağrılan notFound() durum kodunu 200 bırakıyordu). Eşiği yeni geçen bir kategori ya da ilçe
-// sayfası bir sonraki yayında oluşur.
+// sayfası bir sonraki yayında oluşur; site her gece yeniden yayınlanır (.github/workflows/gece-yayini.yml).
 export const dynamicParams = false;
 
 interface PageProps {
@@ -32,11 +32,12 @@ type Sayfa =
   | { tur: 'ilce'; veri: SehirVerisi; ilce: SehirIlcesi; isletmeler: SehirIsletmesi[] }
   | { tur: 'kategori'; veri: SehirVerisi; kategori: SehirKategorisi; isletmeler: SehirIsletmesi[] };
 
+// API derleme sırasında hata verirse derleme durur: sayfaları boşaltarak yayına çıkmaktansa önceki yayın kalır.
 export async function generateStaticParams() {
-  const sehirler = await etkinSehirler().catch(() => []);
+  const sehirler = await acikSehirler();
   const sonuc: Array<{ sehir: string; alt: string }> = [];
   for (const s of sehirler) {
-    const veri = await sehirVerisi(s.slug).catch(() => null);
+    const veri = await sehirVerisi(s.slug);
     if (!veri) continue;
     for (const d of veri.ilceler) sonuc.push({ sehir: s.slug, alt: d.slug });
     for (const k of veri.kategoriler) sonuc.push({ sehir: s.slug, alt: k.slug });
@@ -75,7 +76,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!s) return {};
   const sehirAdi = s.veri.sehir.ad;
   const n = s.isletmeler.length;
-  const baslik = s.tur === 'ilce' ? `${s.ilce.ad} Mekanları · ${sehirAdi}` : sayfaBasligi(s);
+  // "Giresun Merkez" gibi il adını zaten taşıyan ilçede il adı tekrar yazılmaz.
+  const baslik =
+    s.tur === 'ilce'
+      ? s.ilce.ad.startsWith(sehirAdi)
+        ? `${s.ilce.ad} Mekanları`
+        : `${s.ilce.ad} Mekanları · ${sehirAdi}`
+      : sayfaBasligi(s);
   const aciklama =
     s.tur === 'ilce'
       ? `${s.ilce.ad}${bulunmaEki(s.ilce.ad)} Menuland'de listelenen ${n} mekân: ${adlarIleOzet(s.isletmeler)}. Adresler ve varsa güncel menüler mekân sayfalarında.`
@@ -135,8 +142,9 @@ export default async function SehirAltSayfasi({ params }: PageProps) {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: `${SITE_URL}/` },
-          { '@type': 'ListItem', position: 2, name: sehirAdi, item: `${SITE_URL}${sehirYolu}` },
-          { '@type': 'ListItem', position: 3, name: bolumAdi, item: `${SITE_URL}${yol}` },
+          { '@type': 'ListItem', position: 2, name: 'Şehirler', item: `${SITE_URL}/sehirler` },
+          { '@type': 'ListItem', position: 3, name: sehirAdi, item: `${SITE_URL}${sehirYolu}` },
+          { '@type': 'ListItem', position: 4, name: bolumAdi, item: `${SITE_URL}${yol}` },
         ],
       },
       {
@@ -164,7 +172,7 @@ export default async function SehirAltSayfasi({ params }: PageProps) {
   return (
     <div className="flex flex-col gap-10 py-4">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(sayfaJsonLd) }} />
-      <GezintiIzi parcalar={[{ ad: 'Ana Sayfa', yol: '/' }, { ad: sehirAdi, yol: sehirYolu }, { ad: bolumAdi }]} />
+      <GezintiIzi parcalar={[{ ad: 'Ana Sayfa', yol: '/' }, { ad: 'Şehirler', yol: '/sehirler' }, { ad: sehirAdi, yol: sehirYolu }, { ad: bolumAdi }]} />
 
       <header className="flex flex-col gap-3">
         <h1 className="flex items-center gap-2 text-3xl font-black tracking-tight text-zinc-900">

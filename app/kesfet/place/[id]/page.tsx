@@ -1,6 +1,10 @@
+import type { Metadata } from 'next';
+import { cache } from 'react';
+import { notFound } from 'next/navigation';
 import { webPublicClient } from '../../../../lib/api';
+import { kisalt } from '@/lib/site';
 import Link from 'next/link';
-import { Compass, MapPin, ArrowLeft, Landmark, Phone, Globe, Map } from 'lucide-react';
+import { Compass, MapPin, ArrowLeft, Phone, Globe, Map } from 'lucide-react';
 import BusinessGallery from '../../../../components/BusinessGallery';
 import ShareButton from './ShareButton';
 
@@ -24,24 +28,35 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+// generateMetadata ve sayfa aynı istekte aynı veriyi kullanır. Bilinmeyen yerde API 404 döner.
+const getPlace = cache(async (id: string) => {
+  if (!/^\d+$/.test(id)) return null;
+  const res = await webPublicClient.get(`/places/${id}`).catch(() => null);
+  return res && res.data && res.data.id ? res.data : null;
+});
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const place = await getPlace(id);
+  if (!place) return { title: 'Yer Bulunamadı', robots: { index: false, follow: true } };
+  const yer = [place.district_name, place.city_name].filter(Boolean).join(', ');
+  const aciklama = place.description ? kisalt(String(place.description), 158) : `${place.name}${yer ? ` (${yer})` : ''}: Menuland Keşfet.`;
+  // Metni ya da fotoğrafı Kültür Portalı'ndan alınmış yerler, kullanım koşulları kontrol edilene kadar dizine girmez.
+  const disKaynak = /kulturportali\.gov\.tr/i.test(`${place.source_url || ''} ${place.image_source_url || ''}`);
+  return {
+    title: `${place.name}${yer ? ` · ${yer}` : ''}`,
+    description: aciklama,
+    alternates: { canonical: `/kesfet/place/${place.id}` },
+    ...(disKaynak ? { robots: { index: false, follow: true } } : {}),
+  };
+}
+
 export default async function PlaceDetail({ params }: PageProps) {
   const { id } = await params;
 
   // Mekan detaylarını çek
-  const placeRes = await webPublicClient.get(`/places/${id}`).catch(() => null);
-
-  if (!placeRes || !placeRes.data) {
-    return (
-      <div className="text-center py-24 flex flex-col items-center gap-4">
-        <Landmark className="h-16 w-16 text-red-500" />
-        <h1 className="text-2xl font-bold">Mekan Bulunamadı</h1>
-        <p className="text-zinc-500">Aradığınız mekan bilgisi mevcut değil veya silinmiş.</p>
-        <Link href="/kesfet" className="rounded-full bg-[#FF4D00] px-6 py-2 text-xs font-bold text-white">Keşfet'e Dön</Link>
-      </div>
-    );
-  }
-
-  const place = placeRes.data;
+  const place = await getPlace(id);
+  if (!place) notFound();
 
   // Görselleri topla
   const imageUrls = [

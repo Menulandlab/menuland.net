@@ -1,6 +1,7 @@
 import { getBusinesses, getBusinessListingCategories } from '@/src/api/businessService';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { Star, MapPin, Compass, ArrowLeft, Utensils } from 'lucide-react';
 import { getBusinessUrl, extractIdFromSlug, getCategoryUrl } from '../../../lib/utils';
 import { DEFAULT_OG_IMAGE } from '@/lib/site';
@@ -16,6 +17,7 @@ export async function generateMetadata({ params }: PageProps) {
   const categories = await getBusinessListingCategories().catch(() => []);
   const activeCategory = categories.find(c => String(c.id) === id);
   const categoryName = activeCategory?.name || 'Mekanlar';
+  if (!activeCategory) return { title: 'Kategori Bulunamadı', robots: { index: false, follow: true } };
   
   return {
     title: `${categoryName} Menüleri ve Fiyatları`,
@@ -38,6 +40,8 @@ export default async function CategoryPage({ params }: PageProps) {
   // Tüm kategorileri çekerek mevcut kategori adını öğrenelim
   const categories = await getBusinessListingCategories().catch(() => []);
   const activeCategory = categories.find(c => String(c.id) === id);
+  // Bilinmeyen kategori numarası 404 olur (16.11.2026); önce boş bir "Mekanlar" sayfası dizine açık açılıyordu.
+  if (!activeCategory) notFound();
   const categoryName = activeCategory?.name || 'Mekanlar';
 
   // Filtreleme parametrelerini ayarla

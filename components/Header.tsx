@@ -174,9 +174,18 @@ export default function Header() {
               className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-zinc-900 focus:border-[#FF4D00] focus:outline-none"
             >
               <option value="" disabled>Şehir seçin...</option>
-              {cities.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
+              {cities.some(c => c.durum === 'acik') && (
+                <optgroup label="Açık iller">
+                  {cities.filter(c => c.durum === 'acik').map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </optgroup>
+              )}
+              <optgroup label="Yakında">
+                {cities.filter(c => c.durum !== 'acik').map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </optgroup>
             </select>
           </div>
 
@@ -188,14 +197,12 @@ export default function Header() {
                 value={location.districtId || ''}
                 onChange={(e) => {
                   const selected = districts.find(d => String(d.id) === e.target.value);
-                  if (selected) {
-                    selectDistrict(String(selected.id), selected.name);
-                    closeDialog();
-                  }
+                  selectDistrict(selected ? String(selected.id) : '', selected ? selected.name : '');
+                  closeDialog();
                 }}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-zinc-900 focus:border-[#FF4D00] focus:outline-none"
               >
-                <option value="" disabled>İlçe seçin...</option>
+                <option value="">Tüm ilçeler</option>
                 {districts.map(d => (
                   <option key={d.id} value={d.id}>{d.name}</option>
                 ))}

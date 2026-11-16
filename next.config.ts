@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api-proxy/:path*',
-        destination: 'https://api.service.menuland.net/:path*',
+        destination: `${process.env.MENULAND_API_URL || 'https://api.service.menuland.net'}/:path*`,
       },
     ];
   },

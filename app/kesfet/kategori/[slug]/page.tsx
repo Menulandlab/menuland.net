@@ -1,3 +1,6 @@
+import type { Metadata } from 'next';
+import { cache } from 'react';
+import { notFound } from 'next/navigation';
 import { webPublicClient } from '../../../../lib/api';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
@@ -8,9 +11,29 @@ interface PageProps {
   searchParams: Promise<{ title?: string }>;
 }
 
+// Kategori adı adresteki ?title= yerine API'den alınır; bilinmeyen kategori 404 olur.
+const getKategori = cache(async (slug: string) => {
+  const res = await webPublicClient.get('/discovery-categories').catch(() => null);
+  const liste = Array.isArray(res?.data) ? res.data : [];
+  return liste.find((k: any) => k?.slug === slug) || null;
+});
+
+// Bu sayfanın içeriği ziyaretçinin çerezindeki ile göre değişir; Google'a tek bir sürüm gösterilemediği için dizine
+// girmez. İl adresli ve dizine giren sürüm /{il}/gezilecek-yerler sayfasıdır (16.11.2026).
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const kategori = await getKategori(slug);
+  return {
+    title: kategori ? `${kategori.name} · Keşfet` : 'Keşfet',
+    robots: { index: false, follow: true },
+  };
+}
+
 export default async function DiscoveryCategoryPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const { title } = await searchParams;
+  const kategori = await getKategori(slug);
+  if (!kategori) notFound();
+  const title = kategori.name || (await searchParams).title;
   
   const cookieStore = await cookies();
   const cityId = cookieStore.get('selectedCityId')?.value || null;

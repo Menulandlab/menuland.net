@@ -1,7 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'https://api.service.menuland.net';
+// Canlıda ortam değişkeni yoktur; MENULAND_API_URL yalnızca yerel denemede verilir (lib/site.ts API_URL ile aynı kural).
+const BASE_URL = process.env.MENULAND_API_URL || 'https://api.service.menuland.net';
 
 /**
  * Token GEREKTİRMEYEN, halka açık API istekleri için kullanılır.

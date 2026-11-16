@@ -1,20 +1,38 @@
 import { unstable_cache } from 'next/cache';
 import { slugify } from './utils';
+import { API_URL } from './site';
 
 /**
- * Şehir, ilçe ve şehir × kategori sayfalarının verisi.
+ * Şehir, ilçe, şehir × kategori ve gezilecek yerler sayfalarının verisi.
  *
- * Kaynak, uygulamanın da kullandığı herkese açık API'dir: etkin şehirler, etkin ilçeler, liste kategorileri ve bir
- * şehirdeki onaylı, etkin işletmeler (kategorileriyle birlikte). Sayfalardaki her sayı bu veriden o an hesaplanır;
- * elle yazılmış sayı yoktur. Sonuç bir saat önbellekte tutulur (sayfalar da saatte bir yenilenir).
+ * Kaynak, uygulamanın da kullandığı herkese açık API'dir. Sayfalardaki her sayı bu veriden o an hesaplanır; elle
+ * yazılmış sayı yoktur. Sonuç bir saat önbellekte tutulur (sayfalar da saatte bir yenilenir).
  *
- * İnce sayfa kuralı: bir kategori ya da ilçe sayfası, en az EN_AZ_ISLETME işletme varsa oluşur. Daha azı için sayfa
- * yoktur (404) ve site haritasına girmez; o işletmeler şehir sayfasında ve kendi sayfalarında görünmeye devam eder.
+ * Türkiye geneline açılış (16.11.2026): 81 ilin hepsinin sayfası vardır. İlin durumu içerikten hesaplanır:
+ * - En az EN_AZ_ISLETME onaylı ve aktif işletmesi olan il "açık"tır; sayfası dizine girer, ilçe ve kategori
+ *   sayfaları oluşur.
+ * - Diğer iller "yakında"dır; sayfaları ziyaretçiye açıktır ama noindex taşır ve site haritasına girmez. Eşiği geçen il
+ *   bir sonraki yayında kendiliğinden açılır. (Önce yalnızca veritabanında elle "active" yapılan iller sayfa alıyordu.)
+ *
+ * İnce sayfa kuralı: bir ilçe ya da kategori sayfası en az EN_AZ_ISLETME işletme varsa oluşur. Daha azı için sayfa
+ * yoktur (404) ve site haritasına girmez; o işletmeler il sayfasında ve kendi sayfalarında görünmeye devam eder.
  */
 
-const API = 'https://api.service.menuland.net';
 export const EN_AZ_ISLETME = 3;
+/** Gezilecek yerler sayfası için en az yer sayısı. */
+export const EN_AZ_YER = 5;
 const YENILEME_SANIYE = 3600;
+
+export interface Sehir {
+  id: number;
+  ad: string;
+  slug: string;
+  isletmeSayisi: number;
+  yerSayisi: number;
+  enlem: number | null;
+  boylam: number | null;
+  acik: boolean;
+}
 
 export interface SehirIsletmesi {
   id: number;
@@ -45,20 +63,36 @@ export interface SehirIlcesi {
 }
 
 export interface SehirVerisi {
-  sehir: { id: number; ad: string; slug: string };
+  sehir: Sehir;
   isletmeler: SehirIsletmesi[];
-  /** Sayfası olan ilçeler (etkin ve en az EN_AZ_ISLETME işletmeli), çoktan aza. */
+  /** Sayfası olan ilçeler (en az EN_AZ_ISLETME işletmeli), çoktan aza. */
   ilceler: SehirIlcesi[];
   /** Sayfası olan kategoriler (en az EN_AZ_ISLETME işletmeli), çoktan aza. */
   kategoriler: SehirKategorisi[];
-  /** Etkin olsun olmasın bütün ilçe adları (kartlarda ilçe adını yazmak için). */
+  /** Bütün ilçe adları (kartlarda ilçe adını yazmak için); "Merkez" ilçeleri "Giresun Merkez" diye yazılır. */
   ilceAdlari: Record<number, string>;
+}
+
+export interface Yer {
+  id: number;
+  ad: string;
+  aciklama: string | null;
+  gorsel: string | null;
+  tur: string | null;
+  ilce: string | null;
+}
+
+export interface YerVerisi {
+  sehir: Sehir;
+  yerler: Yer[];
+  /** Keşfet kategorileri (Nesi Meşhur?, Mesire Alanları…), yalnızca bu ilde yeri olanlar. */
+  kategoriler: Array<{ ad: string; slug: string; aciklama: string | null; yerIdleri: number[] }>;
 }
 
 type Ham = Record<string, unknown>;
 
 async function getJson(yol: string): Promise<unknown> {
-  const yanit = await fetch(`${API}${yol}`, { next: { revalidate: YENILEME_SANIYE } });
+  const yanit = await fetch(`${API_URL}${yol}`, { next: { revalidate: YENILEME_SANIYE } });
   if (!yanit.ok) {
     throw new Error(`${yol} isteği ${yanit.status} döndü`);
   }
@@ -74,37 +108,70 @@ function evet(deger: unknown): boolean {
   return deger === 1 || deger === '1' || deger === true;
 }
 
-/** Etkin şehirler (adres parçasıyla). */
-export const etkinSehirler = unstable_cache(
-  async (): Promise<Array<{ id: number; ad: string; slug: string }>> => {
-    const sehirler = dizi(await getJson('/cities?status=active'));
-    return sehirler
-      .filter((s) => s && s.id && s.name)
-      .map((s) => ({ id: Number(s.id), ad: String(s.name), slug: slugify(String(s.name)) }));
+function sayiVeyaNull(deger: unknown): number | null {
+  const n = Number(deger);
+  return deger !== null && deger !== undefined && deger !== '' && Number.isFinite(n) ? n : null;
+}
+
+/** "Merkez" adlı 51 ilçe, başlıklarda ve kartlarda il adıyla yazılır: "Giresun Merkez". */
+export function ilceGorunenAdi(ilceAdi: string, sehirAdi: string): string {
+  return ilceAdi.trim().toLocaleLowerCase('tr') === 'merkez' ? `${sehirAdi} Merkez` : ilceAdi;
+}
+
+/**
+ * 81 il, içerikten hesaplanan durumla. API'nin eski sürümü özet döndürmezse (alanlar yoksa) yalnızca veritabanında
+ * etkin olan iller açık sayılır; böylece API'den önce yayına çıkan site de bugünkü gibi çalışır.
+ */
+export const tumSehirler = unstable_cache(
+  async (): Promise<Sehir[]> => {
+    const ham = dizi(await getJson('/cities?ozet=1')).filter((s) => s && s.id && s.name);
+    if (ham.length === 0) {
+      throw new Error('İl listesi boş geldi');
+    }
+    const ozetVar = ham.some((s) => 'isletme_sayisi' in s);
+    return ham
+      .map((s) => {
+        const isletmeSayisi = ozetVar ? Number(s.isletme_sayisi) || 0 : s.status === 'active' ? EN_AZ_ISLETME : 0;
+        return {
+          id: Number(s.id),
+          ad: String(s.name),
+          slug: slugify(String(s.name)),
+          isletmeSayisi,
+          yerSayisi: ozetVar ? Number(s.yer_sayisi) || 0 : 0,
+          enlem: sayiVeyaNull(s.latitude),
+          boylam: sayiVeyaNull(s.longitude),
+          acik: isletmeSayisi >= EN_AZ_ISLETME,
+        };
+      })
+      .sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
   },
-  ['sehir-sayfalari-sehirler-v1'],
+  ['sehir-sayfalari-sehirler-v2'],
   { revalidate: YENILEME_SANIYE }
 );
 
-/** Bir şehrin sayfa verisi; şehir etkin değilse null. */
+/** Açık iller (en az EN_AZ_ISLETME görünür işletmeli). */
+export async function acikSehirler(): Promise<Sehir[]> {
+  return (await tumSehirler()).filter((s) => s.acik);
+}
+
+/** Bir ilin sayfa verisi; il yoksa ya da açık değilse null. */
 export const sehirVerisi = unstable_cache(
   async (sehirSlug: string): Promise<SehirVerisi | null> => {
-    const sehirler = await etkinSehirler();
-    const sehir = sehirler.find((s) => s.slug === sehirSlug);
-    if (!sehir) return null;
+    const sehir = (await tumSehirler()).find((s) => s.slug === sehirSlug);
+    if (!sehir || !sehir.acik) return null;
 
-    const [ilceHam, etkinIlceHam, kategoriHam, isletmeHam] = await Promise.all([
+    const [ilceHam, kategoriHam, isletmeHam] = await Promise.all([
       getJson(`/districts?city_id=${sehir.id}`),
-      getJson(`/districts?city_id=${sehir.id}&status=active`),
       getJson('/businesslistingcategories'),
-      getJson(`/businesses?city_id=${sehir.id}&status=approved`),
+      // alanlar=liste: açıklama, yasal metinler ve 10 görsel alanı gelmez (Ordu'da 576 KB yerine yaklaşık 170 KB).
+      getJson(`/businesses?city_id=${sehir.id}&status=approved&alanlar=liste`),
     ]);
 
     const ilceAdlari: Record<number, string> = {};
-    for (const d of dizi(ilceHam)) {
-      if (d?.id && d?.name) ilceAdlari[Number(d.id)] = String(d.name);
+    const ilceListesi = dizi(ilceHam).filter((d) => d?.id && d?.name);
+    for (const d of ilceListesi) {
+      ilceAdlari[Number(d.id)] = ilceGorunenAdi(String(d.name), sehir.ad);
     }
-    const etkinIlceler = dizi(etkinIlceHam).filter((d) => d?.id && d?.name);
 
     const isletmeler: SehirIsletmesi[] = dizi(isletmeHam)
       .filter((b) => b && b.id && b.name && b.status === 'approved' && (b.is_active === undefined || evet(b.is_active)))
@@ -116,7 +183,7 @@ export const sehirVerisi = unstable_cache(
         kategoriIdleri: dizi(b.categories).map((c) => Number(c.id)).filter(Boolean),
         gorsel: String(b.image_url_medium || b.image_url_thumb || b.image_url_1 || '') || null,
         aciklama: b.description ? String(b.description).replace(/\s+/g, ' ').trim().slice(0, 220) : null,
-        adres: b.address ? String(b.address) : null,
+        adres: b.adres ? String(b.adres) : b.address ? String(b.address) : null,
         rezervasyon: evet(b.accepts_reservations),
         gelAl: evet(b.has_takeaway),
         onecikan: evet(b.is_featured),
@@ -137,12 +204,19 @@ export const sehirVerisi = unstable_cache(
       for (const k of new Set(i.kategoriIdleri)) kategoriSayilari.set(k, (kategoriSayilari.get(k) || 0) + 1);
     }
 
-    const ilceler: SehirIlcesi[] = etkinIlceler
-      .map((d) => ({ id: Number(d.id), ad: String(d.name), slug: slugify(String(d.name)), sayi: ilceSayilari.get(Number(d.id)) || 0 }))
+    // İlçe sayfası için ilçenin veritabanında etkin olması gerekmez; yalnızca işletme sayısı eşiği geçerli.
+    const ilceler: SehirIlcesi[] = ilceListesi
+      .map((d) => ({
+        id: Number(d.id),
+        ad: ilceGorunenAdi(String(d.name), sehir.ad),
+        slug: slugify(String(d.name)),
+        sayi: ilceSayilari.get(Number(d.id)) || 0,
+      }))
       .filter((d) => d.sayi >= EN_AZ_ISLETME)
       .sort((a, b) => b.sayi - a.sayi || a.ad.localeCompare(b.ad, 'tr'));
 
-    const ilceSluglari = new Set(ilceler.map((d) => d.slug));
+    // "gezilecek-yerler" adresi ilin gezilecek yerler sayfasına ayrılmıştır.
+    const ilceSluglari = new Set([...ilceler.map((d) => d.slug), 'gezilecek-yerler']);
     const kullanilanSluglar = new Set<string>();
     const kategoriler: SehirKategorisi[] = [];
     for (const k of dizi(kategoriHam)) {
@@ -159,9 +233,79 @@ export const sehirVerisi = unstable_cache(
 
     return { sehir, isletmeler, ilceler, kategoriler, ilceAdlari };
   },
-  ['sehir-sayfalari-veri-v1'],
+  ['sehir-sayfalari-veri-v2'],
   { revalidate: YENILEME_SANIYE }
 );
+
+/**
+ * Bir yerin metni ya da fotoğrafı Kültür Portalı'ndan (kulturportali.gov.tr) alınmışsa, sitenin kullanım koşulları
+ * kontrol edilene kadar gösterilmez (16.11.2026 kararı). İstanbul'daki 72 yerin 71'i böyle.
+ */
+function gosterilebilirYer(p: Ham): boolean {
+  return !/kulturportali\.gov\.tr/i.test(`${p.source_url || ''} ${p.image_source_url || ''}`);
+}
+
+/** Bir ilin gezilecek yerleri; en az EN_AZ_YER gösterilebilir yer yoksa null. */
+export const yerVerisi = unstable_cache(
+  async (sehirSlug: string): Promise<YerVerisi | null> => {
+    const sehir = (await tumSehirler()).find((s) => s.slug === sehirSlug);
+    if (!sehir || sehir.yerSayisi < EN_AZ_YER) return null;
+
+    const [yerHam, kategoriHam] = await Promise.all([
+      getJson(`/places?city_id=${sehir.id}`),
+      getJson('/discovery-categories?active=1'),
+    ]);
+    const yerler: Yer[] = dizi(yerHam)
+      .filter((p) => p && p.id && p.name && gosterilebilirYer(p))
+      .map((p) => ({
+        id: Number(p.id),
+        ad: String(p.name),
+        aciklama: p.description ? String(p.description).replace(/\s+/g, ' ').trim() : null,
+        gorsel: p.image_url ? String(p.image_url) : null,
+        tur: p.type ? String(p.type) : null,
+        ilce: p.district_name ? ilceGorunenAdi(String(p.district_name), sehir.ad) : null,
+      }))
+      .sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
+    if (yerler.length < EN_AZ_YER) return null;
+
+    const yerIdleri = new Set(yerler.map((y) => y.id));
+    const kategoriler: YerVerisi['kategoriler'] = [];
+    const etkinKategoriler = dizi(kategoriHam)
+      .filter((k) => k?.slug && k?.name && (k.is_active === undefined || evet(k.is_active)))
+      .sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
+    for (const k of etkinKategoriler) {
+      const liste = dizi(await getJson(`/places?city_id=${sehir.id}&category_slug=${encodeURIComponent(String(k.slug))}`));
+      const idler = liste.map((p) => Number(p.id)).filter((id) => yerIdleri.has(id));
+      if (idler.length > 0) {
+        kategoriler.push({ ad: String(k.name), slug: String(k.slug), aciklama: k.description ? String(k.description) : null, yerIdleri: idler });
+      }
+    }
+    return { sehir, yerler, kategoriler };
+  },
+  ['sehir-sayfalari-yerler-v1'],
+  { revalidate: YENILEME_SANIYE }
+);
+
+/** İki il merkezi arasındaki kuş uçuşu mesafe (km). */
+function mesafeKm(a: Sehir, b: Sehir): number {
+  if (a.enlem === null || a.boylam === null || b.enlem === null || b.boylam === null) return Number.POSITIVE_INFINITY;
+  const rad = (x: number) => (x * Math.PI) / 180;
+  const dEnlem = rad(b.enlem - a.enlem);
+  const dBoylam = rad(b.boylam - a.boylam);
+  const h = Math.sin(dEnlem / 2) ** 2 + Math.cos(rad(a.enlem)) * Math.cos(rad(b.enlem)) * Math.sin(dBoylam / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
+
+/** Bir ile en yakın açık il ve aradaki yaklaşık mesafe. */
+export async function enYakinAcikSehir(sehir: Sehir): Promise<{ sehir: Sehir; km: number } | null> {
+  const adaylar = (await acikSehirler()).filter((s) => s.id !== sehir.id);
+  let enIyi: { sehir: Sehir; km: number } | null = null;
+  for (const s of adaylar) {
+    const km = mesafeKm(sehir, s);
+    if (Number.isFinite(km) && (!enIyi || km < enIyi.km)) enIyi = { sehir: s, km };
+  }
+  return enIyi;
+}
 
 /** Bir işletmenin ait olduğu şehir, ilçe ve kategori sayfaları (işletme sayfasındaki bağlantılar için). */
 export async function isletmeninSayfalari(isletme: {
@@ -176,8 +320,7 @@ export async function isletmeninSayfalari(isletme: {
   const bos = { sehir: null, ilce: null, kategoriler: [] };
   if (!isletme.city_id) return bos;
   try {
-    const sehirler = await etkinSehirler();
-    const sehir = sehirler.find((s) => s.id === Number(isletme.city_id));
+    const sehir = (await acikSehirler()).find((s) => s.id === Number(isletme.city_id));
     if (!sehir) return bos;
     const veri = await sehirVerisi(sehir.slug);
     if (!veri) return bos;
@@ -195,12 +338,11 @@ export async function isletmeninSayfalari(isletme: {
   }
 }
 
-/** Bir liste kategorisinin şehir sayfası (kategori sayfasındaki bağlantı için). */
+/** Bir liste kategorisinin şehir sayfaları (kategori sayfasındaki bağlantı için). Yalnızca açık iller gezilir. */
 export async function kategorininSehirSayfalari(kategoriId: number): Promise<Array<{ yol: string; baslik: string; sayi: number }>> {
   try {
-    const sehirler = await etkinSehirler();
     const sonuc: Array<{ yol: string; baslik: string; sayi: number }> = [];
-    for (const s of sehirler) {
+    for (const s of await acikSehirler()) {
       const veri = await sehirVerisi(s.slug);
       const k = veri?.kategoriler.find((x) => x.id === kategoriId);
       if (veri && k) sonuc.push({ yol: `/${s.slug}/${k.slug}`, baslik: kategoriBasligi(s.ad, k.ad), sayi: k.sayi });

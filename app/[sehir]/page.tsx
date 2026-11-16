@@ -1,36 +1,62 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { MapPin } from 'lucide-react';
-import { etkinSehirler, sehirVerisi, kategoriBasligi, bulunmaEki, ayrilmaEki, listeHalinde } from '@/lib/sehirSayfalari';
+import { MapPin, Landmark } from 'lucide-react';
+import {
+  tumSehirler,
+  acikSehirler,
+  sehirVerisi,
+  enYakinAcikSehir,
+  kategoriBasligi,
+  bulunmaEki,
+  ayrilmaEki,
+  listeHalinde,
+  EN_AZ_YER,
+} from '@/lib/sehirSayfalari';
 import { SITE_URL, DEFAULT_OG_IMAGE, jsonLd } from '@/lib/site';
 import { getBusinessUrl } from '@/lib/utils';
-import { GezintiIzi, IsletmeIzgarasi, BaglantiCipleri, EkosistemBolumu } from '@/components/SehirSayfasi';
+import { GezintiIzi, IsletmeIzgarasi, BaglantiCipleri, EkosistemBolumu, SehirYakinda } from '@/components/SehirSayfasi';
 
-// Şehir sayfası: ilçe ve kategori sayfalarına giden ana sayfa. Veri saatte bir yenilenir.
+// İl sayfası: açık illerde ilçe ve kategori sayfalarına giden ana sayfa, diğer illerde "yakında" sayfası.
+// Veri saatte bir yenilenir.
 export const revalidate = 3600;
 // Yalnızca derlemede üretilen adresler vardır; bilinmeyen adresler gerçek 404 alır (sitenin kök loading.tsx'i
-// yüzünden sayfa içinden çağrılan notFound() durum kodunu 200 bırakıyordu). Eşiği yeni geçen bir kategori ya da ilçe
-// sayfası bir sonraki yayında oluşur.
+// yüzünden sayfa içinden çağrılan notFound() durum kodunu 200 bırakıyordu). 81 ilin hepsi derlemede üretilir.
 export const dynamicParams = false;
 
 interface PageProps {
   params: Promise<{ sehir: string }>;
 }
 
+// API derleme sırasında hata verirse derleme durur: sayfaları boşaltarak yayına çıkmaktansa önceki yayın kalır.
 export async function generateStaticParams() {
-  const sehirler = await etkinSehirler().catch(() => []);
+  const sehirler = await tumSehirler();
   return sehirler.map((s) => ({ sehir: s.slug }));
 }
 
+async function sehriBul(slug: string) {
+  return (await tumSehirler().catch(() => [])).find((s) => s.slug === slug) || null;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { sehir } = await params;
-  const veri = await sehirVerisi(sehir).catch(() => null);
+  const { sehir: slug } = await params;
+  const sehir = await sehriBul(slug);
+  if (!sehir) return {};
+  const ad = sehir.ad;
+  const yol = `/${sehir.slug}`;
+  if (!sehir.acik) {
+    // Yakında sayfası: ziyaretçiye açık, Google dizinine kapalı (16.11.2026 kararı).
+    return {
+      title: `${ad} Mekanları · Yakında`,
+      description: `Menuland ${ad}${bulunmaEki(ad)} henüz açılmadı. Açık illerdeki mekânlar ve işletme sahipleri için bilgi.`,
+      alternates: { canonical: yol },
+      robots: { index: false, follow: true },
+    };
+  }
+  const veri = await sehirVerisi(slug).catch(() => null);
   if (!veri) return {};
-  const ad = veri.sehir.ad;
   const baslik = `${ad} Mekanları: İlçeler ve Kategoriler`;
   const aciklama = `${ad}${bulunmaEki(ad)} Menuland'de listelenen ${veri.isletmeler.length} mekânı ilçelere ve kategorilere göre keşfedin. Mekân sayfalarında adres ve varsa güncel menü yer alır.`;
-  const yol = `/${veri.sehir.slug}`;
   return {
     title: baslik,
     description: aciklama,
@@ -40,8 +66,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function SehirSayfasi({ params }: PageProps) {
-  const { sehir } = await params;
-  const veri = await sehirVerisi(sehir).catch(() => null);
+  const { sehir: slug } = await params;
+  const sehir = await sehriBul(slug);
+  if (!sehir) notFound();
+
+  if (!sehir.acik) {
+    const [enYakin, aciklar] = await Promise.all([enYakinAcikSehir(sehir).catch(() => null), acikSehirler().catch(() => [])]);
+    return <SehirYakinda sehir={sehir} enYakin={enYakin} acikSehirler={aciklar} />;
+  }
+
+  const veri = await sehirVerisi(slug).catch(() => null);
   if (!veri) notFound();
 
   const ad = veri.sehir.ad;
@@ -57,6 +91,7 @@ export default async function SehirSayfasi({ params }: PageProps) {
         }`
       : '';
   const giris = `Menuland'de ${ad}${bulunmaEki(ad)} ${veri.isletmeler.length} mekân listeleniyor.${ilceCumlesi}`;
+  const gezilecekYerVar = veri.sehir.yerSayisi >= EN_AZ_YER;
 
   const sayfaJsonLd = {
     '@context': 'https://schema.org',
@@ -65,7 +100,8 @@ export default async function SehirSayfasi({ params }: PageProps) {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: `${SITE_URL}/` },
-          { '@type': 'ListItem', position: 2, name: ad, item: `${SITE_URL}${yol}` },
+          { '@type': 'ListItem', position: 2, name: 'Şehirler', item: `${SITE_URL}/sehirler` },
+          { '@type': 'ListItem', position: 3, name: ad, item: `${SITE_URL}${yol}` },
         ],
       },
       {
@@ -85,7 +121,7 @@ export default async function SehirSayfasi({ params }: PageProps) {
   return (
     <div className="flex flex-col gap-10 py-4">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(sayfaJsonLd) }} />
-      <GezintiIzi parcalar={[{ ad: 'Ana Sayfa', yol: '/' }, { ad }]} />
+      <GezintiIzi parcalar={[{ ad: 'Ana Sayfa', yol: '/' }, { ad: 'Şehirler', yol: '/sehirler' }, { ad }]} />
 
       <header className="flex flex-col gap-3">
         <h1 className="flex items-center gap-2 text-3xl font-black tracking-tight text-zinc-900">
@@ -117,6 +153,19 @@ export default async function SehirSayfasi({ params }: PageProps) {
           </div>
           <IsletmeIzgarasi isletmeler={secki} ilceAdlari={veri.ilceAdlari} kategoriAdlari={kategoriAdlari} />
         </section>
+      )}
+
+      {gezilecekYerVar && (
+        <Link
+          href={`${yol}/gezilecek-yerler`}
+          className="flex items-center gap-3 rounded-3xl border border-gray-100 bg-white p-6 transition-colors hover:border-[#FF4D00]"
+        >
+          <Landmark className="h-6 w-6 text-[#FF4D00]" aria-hidden="true" />
+          <span className="flex flex-col">
+            <span className="text-base font-bold text-zinc-900">{`${ad}${bulunmaEki(ad)} Gezilecek Yerler`}</span>
+            <span className="text-sm text-zinc-600">Menuland Keşfet'teki yerler, kategorilere göre.</span>
+          </span>
+        </Link>
       )}
 
       <EkosistemBolumu utm="sehir-sayfasi" />

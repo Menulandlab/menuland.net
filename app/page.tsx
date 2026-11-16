@@ -42,6 +42,7 @@ const anaSayfaJsonLd = {
   ],
 };
 import YandexAdBanner from '@/components/YandexAdBanner';
+import { acikSehirler } from '@/lib/sehirSayfalari';
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -56,9 +57,10 @@ export default async function Home() {
   if (districtId) businessParams.district_id = districtId;
 
   // Kategorileri ve seçili konuma özel işletmeleri sunucuda paralel olarak çek
-  const [categories, businesses] = await Promise.all([
+  const [categories, businesses, sehirler] = await Promise.all([
     getBusinessListingCategories().catch(() => []),
     getBusinesses(businessParams).catch(() => []),
+    acikSehirler().catch(() => []),
   ]);
 
   return (
@@ -126,6 +128,29 @@ export default async function Home() {
                 <span className="text-xs font-semibold text-zinc-800 truncate w-full">
                   {category.name}
                 </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Açık iller (16.11.2026): il sayfalarına ana sayfadan iç bağlantı */}
+      {sehirler.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight text-zinc-900">Şehirler</h2>
+            <Link href="/sehirler" className="text-sm font-semibold text-[#FF4D00] hover:underline">Tümünü Gör</Link>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {sehirler.map((s) => (
+              <Link
+                key={s.id}
+                href={`/${s.slug}`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+              >
+                <MapPin className="h-4 w-4 text-[#FF4D00]" aria-hidden="true" />
+                {`${s.ad} Mekanları`}
+                <span className="text-xs font-normal text-zinc-400">{s.isletmeSayisi}</span>
               </Link>
             ))}
           </div>

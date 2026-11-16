@@ -1,37 +1,59 @@
-import { getBusinesses } from '@/src/api/businessService';
+import { publicApiClient } from '@/src/api/client';
+import type { BusinessResponse } from '@/src/api/businessService';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Star, MapPin, Compass, ArrowLeft, Utensils } from 'lucide-react';
 import { getBusinessUrl } from '../../lib/utils';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: 'Tüm Restoran ve Kafeler',
-  description:
-    "Menuland'de listelenen restoran, kafe ve mekânların tamamı: adresler, iletişim bilgileri ve varsa güncel dijital menüler.",
-  alternates: { canonical: '/all-businesses' },
-};
+// Sayfa başına 24 işletme (16.11.2026). Önce bütün işletmeler tek sayfada çiziliyordu; ülke geneline açılınca
+// bu sayfa çok büyürdü.
+const SAYFA_BOYU = 24;
 
 interface PageProps {
-  searchParams: Promise<{ search?: string }>;
+  searchParams: Promise<{ search?: string; sayfa?: string }>;
+}
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const { search, sayfa } = await searchParams;
+  const no = Math.max(1, Number(sayfa) || 1);
+  return {
+    title: no > 1 ? `Tüm Restoran ve Kafeler · Sayfa ${no}` : 'Tüm Restoran ve Kafeler',
+    description:
+      "Menuland'de listelenen restoran, kafe ve mekânların tamamı: adresler, iletişim bilgileri ve varsa güncel dijital menüler.",
+    alternates: { canonical: no > 1 ? `/all-businesses?sayfa=${no}` : '/all-businesses' },
+    // Arama sonuçları dizine girmez.
+    ...(search ? { robots: { index: false, follow: true } } : {}),
+  };
 }
 
 export default async function AllBusinesses({ searchParams }: PageProps) {
-  const { search } = await searchParams;
+  const { search, sayfa } = await searchParams;
+  const sayfaNo = Math.max(1, Number(sayfa) || 1);
   const cookieStore = await cookies();
   const cityId = cookieStore.get('selectedCityId')?.value || null;
   const districtId = cookieStore.get('selectedDistrictId')?.value || null;
   const cityName = cookieStore.get('selectedCityName')?.value || null;
   const districtName = cookieStore.get('selectedDistrictName')?.value || null;
 
-  // Konum ve arama filtrelerini uygula
-  const businessParams: any = { limit: 50 };
+  // Konum ve arama filtrelerini uygula; page gönderilince API sayfalı yanıt verir ({data, total}).
+  const businessParams: any = { page: sayfaNo, limit: SAYFA_BOYU, status: 'approved' };
   if (cityId) businessParams.city_id = cityId;
   if (districtId) businessParams.district_id = districtId;
   if (search) businessParams.search = search;
 
   // İşletmeleri çek
-  const businesses = await getBusinesses(businessParams).catch(() => []);
+  const yanit = await publicApiClient.get('/businesses', { params: businessParams }).catch(() => null);
+  const businesses: BusinessResponse[] = Array.isArray(yanit?.data?.data) ? yanit.data.data : [];
+  const toplam = Number(yanit?.data?.total) || businesses.length;
+  const sayfaSayisi = Math.max(1, Math.ceil(toplam / SAYFA_BOYU));
+  const sayfaAdresi = (no: number) => {
+    const q = new URLSearchParams();
+    if (search) q.set('search', search);
+    if (no > 1) q.set('sayfa', String(no));
+    const metin = q.toString();
+    return metin ? `/all-businesses?${metin}` : '/all-businesses';
+  };
 
   return (
     <div className="flex flex-col gap-8 py-4">
@@ -112,16 +134,32 @@ export default async function AllBusinesses({ searchParams }: PageProps) {
                     {biz.description}
                   </p>
                 )}
-                {biz.address && (
+                {((biz as any).adres || biz.address) && (
                   <span className="text-xs text-zinc-400 truncate mt-2 flex items-center gap-1">
                     <MapPin className="h-3 w-3 text-zinc-400" />
-                    {biz.address}
+                    {(biz as any).adres || biz.address}
                   </span>
                 )}
               </div>
             </Link>
           ))}
         </div>
+      )}
+
+      {sayfaSayisi > 1 && (
+        <nav aria-label="Sayfalar" className="flex items-center justify-center gap-4 text-sm">
+          {sayfaNo > 1 && (
+            <Link href={sayfaAdresi(sayfaNo - 1)} rel="prev" className="font-semibold text-[#FF4D00]">
+              ← Önceki
+            </Link>
+          )}
+          <span className="text-zinc-500">{`Sayfa ${sayfaNo} / ${sayfaSayisi} (${toplam} mekân)`}</span>
+          {sayfaNo < sayfaSayisi && (
+            <Link href={sayfaAdresi(sayfaNo + 1)} rel="next" className="font-semibold text-[#FF4D00]">
+              Sonraki →
+            </Link>
+          )}
+        </nav>
       )}
     </div>
   );

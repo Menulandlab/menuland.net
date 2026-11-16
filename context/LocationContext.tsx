@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { webPublicClient } from '../lib/api';
+import { slugify } from '../lib/utils';
 
 export interface LocationData {
   cityId: string | null;
@@ -10,10 +11,24 @@ export interface LocationData {
   districtName: string | null;
 }
 
+// 16.11.2026: 81 ilin hepsi seçilebilir; durum ("acik" / "yakinda") ve işletme sayısı API'nin il özetinden gelir.
+export interface SehirSecenegi {
+  id: number;
+  name: string;
+  durum?: 'acik' | 'yakinda';
+  isletme_sayisi?: number;
+}
+
+export interface IlceSecenegi {
+  id: number;
+  name: string;
+  isletme_sayisi?: number;
+}
+
 interface LocationContextType {
   location: LocationData;
-  cities: { id: number; name: string }[];
-  districts: { id: number; name: string }[];
+  cities: SehirSecenegi[];
+  districts: IlceSecenegi[];
   isLoading: boolean;
   selectCity: (cityId: string, cityName: string) => Promise<void>;
   selectDistrict: (districtId: string, districtName: string) => void;
@@ -33,17 +48,17 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
     districtId: null,
     districtName: null,
   });
-  const [cities, setCities] = useState<{ id: number; name: string }[]>([]);
-  const [districts, setDistricts] = useState<{ id: number; name: string }[]>([]);
+  const [cities, setCities] = useState<SehirSecenegi[]>([]);
+  const [districts, setDistricts] = useState<IlceSecenegi[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Şehirleri yükle
   useEffect(() => {
     async function loadCities() {
       try {
-        const response = await webPublicClient.get('/cities', { params: { status: 'active' } });
+        const response = await webPublicClient.get('/cities', { params: { ozet: 1 } });
         if (Array.isArray(response.data)) {
-          setCities(response.data);
+          setCities([...response.data].sort((a, b) => String(a.name).localeCompare(String(b.name), 'tr')));
         }
       } catch (e) {
         console.error('Şehirler yüklenirken hata oluştu:', e);
@@ -63,10 +78,10 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
           
           if (parsed.cityId) {
             const res = await webPublicClient.get('/districts', {
-              params: { city_id: parsed.cityId, status: 'active' },
+              params: { city_id: parsed.cityId, ozet: 1 },
             });
             if (Array.isArray(res.data)) {
-              setDistricts(res.data);
+              setDistricts(res.data.filter((d: IlceSecenegi) => (d.isletme_sayisi ?? 1) > 0));
             }
           }
         }
@@ -83,16 +98,17 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     try {
       const res = await webPublicClient.get('/districts', {
-        params: { city_id: cityId, status: 'active' },
+        params: { city_id: cityId, ozet: 1 },
       });
-      const districtsList = Array.isArray(res.data) ? res.data : [];
+      const districtsList = Array.isArray(res.data) ? res.data.filter((d: IlceSecenegi) => (d.isletme_sayisi ?? 1) > 0) : [];
       setDistricts(districtsList);
 
+      // İl seçilince ilçe "Tüm ilçeler" olur; önce alfabetik ilk ilçe kendiliğinden seçiliyordu (16.11.2026).
       const newLoc: LocationData = {
         cityId,
         cityName,
-        districtId: districtsList.length > 0 ? String(districtsList[0].id) : null,
-        districtName: districtsList.length > 0 ? districtsList[0].name : null,
+        districtId: null,
+        districtName: null,
       };
       
       setLocation(newLoc);
@@ -104,8 +120,8 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
       setCookie('selectedDistrictId', newLoc.districtId || '');
       setCookie('selectedDistrictName', newLoc.districtName || '');
 
-      // Şehir değiştiğinde sayfayı yenileyerek yeni şehre göre popüler restoranları getir
-      window.location.reload();
+      // Şehir değiştiğinde o ilin sayfası açılır (açık ilde mekânlar, diğerlerinde "yakında" sayfası).
+      window.location.href = `/${slugify(cityName)}`;
     } catch (e) {
       console.error('İlçeler yüklenemedi:', e);
     } finally {
@@ -113,11 +129,12 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Boş districtId "Tüm ilçeler" demektir.
   const selectDistrict = (districtId: string, districtName: string) => {
     const newLoc = {
       ...location,
-      districtId,
-      districtName,
+      districtId: districtId || null,
+      districtName: districtId ? districtName : null,
     };
     setLocation(newLoc);
     localStorage.setItem('@selectedLocation', JSON.stringify(newLoc));

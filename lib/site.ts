@@ -2,6 +2,18 @@
 export const SITE_URL = 'https://www.menuland.net';
 export const SITE_NAME = 'Menuland';
 
+/**
+ * Menuland API adresi. Canlıda ortam değişkeni yoktur ve canlı API kullanılır; MENULAND_API_URL yalnızca yerel
+ * denemede (ör. http://127.0.0.1:3141) verilir. Tarayıcıda okunmaz; tarayıcı istekleri /api-proxy üzerinden gider.
+ */
+export const API_URL = process.env.MENULAND_API_URL || 'https://api.service.menuland.net';
+
+/** WhatsApp destek hattı ve kaynak kodlu hazır mesaj (kod, mesajın nereden geldiğini gösterir). */
+export const WHATSAPP_NUMARASI = '908508401302';
+export function whatsappBaglantisi(mesaj: string, kod: string): string {
+  return `https://wa.me/${WHATSAPP_NUMARASI}?text=${encodeURIComponent(`${mesaj}\n\n(Kod: ${kod})`)}`;
+}
+
 /** Sayfaya özel görseli olmayan sayfalar için paylaşım görseli (1200×630, açık zemin). */
 export const DEFAULT_OG_IMAGE = {
   url: '/images/menuland-og.png',

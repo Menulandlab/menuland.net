@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: "%s | Menuland",
   },
   description: "En yakın restoranların güncel menülerini, fiyatlarını keşfedin, rezervasyon yapın, lezzet rehberlerini inceleyin ve PuanLand ile indirim kazanın.",
-  keywords: ["dijital menü", "qr menü", "restoran menüleri", "lezzet rehberi", "istanbul kahvaltı mekanları", "menuland", "menü fiyatları"],
+  keywords: ["dijital menü", "qr menü", "restoran menüleri", "lezzet rehberi", "menuland", "menü fiyatları"],
   openGraph: {
     title: "Menuland - Dijital Menü, Keşif ve Sadakat Platformu",
     description: "En yakın restoranların güncel menülerini, fiyatlarını keşfedin ve lezzet rehberlerini inceleyin.",

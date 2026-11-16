@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_URL } from './site';
 
-const DIRECT_BASE_URL = 'https://api.service.menuland.net';
+const DIRECT_BASE_URL = API_URL;
 
 // Sunucu tarafında doğrudan API'ye git (CORS yok)
 // Tarayıcı tarafında Next.js proxy üzerinden git (CORS sorunu olmaz)

@@ -4,7 +4,7 @@ import { getBusinessUrl, getCategoryUrl } from '@/lib/utils';
 import { getBlogPosts } from '@/src/api/blogService';
 import { getAllDocsArticles } from '@/src/data/docs-data';
 import { SITE_URL } from '@/lib/site';
-import { etkinSehirler, sehirVerisi } from '@/lib/sehirSayfalari';
+import { acikSehirler, sehirVerisi, tumSehirler, yerVerisi, EN_AZ_YER } from '@/lib/sehirSayfalari';
 
 type Siklik = MetadataRoute.Sitemap[number]['changeFrequency'];
 
@@ -13,6 +13,9 @@ type Siklik = MetadataRoute.Sitemap[number]['changeFrequency'];
  * "Son güncelleme" yalnızca gerçek bir tarih biliniyorsa yazılır (blog yazılarının yayın tarihi). Her derlemede o anın
  * saatini yazmak, Google'ın bu alana güvenini düşürür.
  */
+// Site haritası saatte bir yenilenir (önce yalnızca yayında üretiliyordu); gece yayını da yeniler.
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL;
 
@@ -23,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ['/kesfet', 'daily', 0.9],
     ['/all-businesses', 'daily', 0.9],
     ['/all-categories', 'weekly', 0.8],
+    ['/sehirler', 'weekly', 0.85],
     ['/docs', 'weekly', 0.9],
     ['/hakkimizda', 'monthly', 0.5],
     ['/iletisim', 'monthly', 0.5],
@@ -52,10 +56,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
-  // 4. İşletmeler (menüsü olsun olmasın hepsi; marka görünürlüğü için dizinde kalırlar)
+  // 4. İşletmeler (menüsü olsun olmasın hepsi; marka görünürlüğü için dizinde kalırlar). Yalnızca onaylı ve aktif
+  //    olanlar girer; pasif işletmenin sayfası noindex taşır (16.11.2026).
   let businessPages: MetadataRoute.Sitemap = [];
   try {
-    const businesses = await getBusinesses({ limit: 1000 });
+    const businesses = (await getBusinesses({ limit: 1000 })).filter((biz: any) => {
+      const durum = biz.status;
+      const aktif = biz.is_active;
+      return (durum === undefined || durum === 'approved') && (aktif === undefined || aktif === null || Number(aktif) === 1);
+    });
     businessPages = businesses.map((biz) => ({
       url: `${baseUrl}${getBusinessUrl(biz)}`,
       changeFrequency: 'weekly' as const,
@@ -65,10 +74,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Sitemap businesses fetch error:', error);
   }
 
-  // 5. Kategoriler
+  // 5. Kategoriler: yalnızca en az bir açık ilde işletmesi olanlar (boş kategori sayfası haritaya girmez).
   let categoryPages: MetadataRoute.Sitemap = [];
   try {
-    const categories = await getBusinessListingCategories();
+    const doluKategoriler = new Set<number>();
+    for (const s of await acikSehirler()) {
+      const veri = await sehirVerisi(s.slug);
+      for (const i of veri?.isletmeler || []) for (const k of i.kategoriIdleri) doluKategoriler.add(k);
+    }
+    const categories = (await getBusinessListingCategories()).filter((cat) => doluKategoriler.has(Number(cat.id)));
     categoryPages = categories.map((cat) => ({
       url: `${baseUrl}${getCategoryUrl(cat)}`,
       changeFrequency: 'weekly' as const,
@@ -78,10 +92,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Sitemap categories fetch error:', error);
   }
 
-  // 6. Şehir, ilçe ve şehir × kategori sayfaları. Yalnızca sayfası oluşan (en az 3 işletmeli) ilçe ve kategoriler girer.
+  // 6. Şehir, ilçe, şehir × kategori ve gezilecek yerler sayfaları. Yalnızca açık iller (en az 3 işletmeli) ve sayfası
+  //    oluşan ilçe ve kategoriler girer; "yakında" il sayfaları noindex taşıdığı için haritaya girmez.
+  //    Bu bölüm hata verirse derleme durur: şehir sayfaları olmadan yayına çıkılmaz.
   const sehirPages: MetadataRoute.Sitemap = [];
-  try {
-    const sehirler = await etkinSehirler();
+  {
+    const sehirler = await acikSehirler();
     for (const s of sehirler) {
       const veri = await sehirVerisi(s.slug);
       if (!veri) continue;
@@ -93,8 +109,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         sehirPages.push({ url: `${baseUrl}/${s.slug}/${k.slug}`, changeFrequency: 'weekly', priority: 0.75 });
       }
     }
-  } catch (error) {
-    console.error('Sitemap city pages error:', error);
+    for (const s of (await tumSehirler()).filter((x) => x.yerSayisi >= EN_AZ_YER)) {
+      if (await yerVerisi(s.slug)) {
+        sehirPages.push({ url: `${baseUrl}/${s.slug}/gezilecek-yerler`, changeFrequency: 'weekly', priority: 0.75 });
+      }
+    }
   }
 
   return [...staticPages, ...docsPages, ...blogPages, ...sehirPages, ...categoryPages, ...businessPages];
