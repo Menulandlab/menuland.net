@@ -10,7 +10,8 @@ import { GezintiIzi, YerIzgarasi, EkosistemBolumu } from '@/components/SehirSayf
 // Sayfa yalnızca en az EN_AZ_YER gösterilebilir yer varsa oluşur. Kültür Portalı'ndan alınmış metin ve fotoğraflar,
 // sitenin kullanım koşulları kontrol edilene kadar gösterilmez (lib/sehirSayfalari.ts gosterilebilirYer).
 export const revalidate = 3600;
-export const dynamicParams = false;
+// Eşiği sonradan geçen ilin sayfası ilk ziyarette üretilir; eşiğin altındaki ya da olmayan il 404 alır (18.11.2026).
+export const dynamicParams = true;
 
 interface PageProps {
   params: Promise<{ sehir: string }>;

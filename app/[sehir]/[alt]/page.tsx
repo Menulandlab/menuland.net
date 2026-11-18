@@ -19,10 +19,11 @@ import { GezintiIzi, IsletmeIzgarasi, BaglantiCipleri, EkosistemBolumu } from '@
 
 // Şehir × kategori (örneğin /ordu/kahvalti) ya da ilçe (örneğin /ordu/altinordu) sayfası. Veri saatte bir yenilenir.
 export const revalidate = 3600;
-// Yalnızca derlemede üretilen adresler vardır; bilinmeyen adresler gerçek 404 alır (sitenin kök loading.tsx'i
-// yüzünden sayfa içinden çağrılan notFound() durum kodunu 200 bırakıyordu). Eşiği yeni geçen bir kategori ya da ilçe
-// sayfası bir sonraki yayında oluşur; site her gece yeniden yayınlanır (.github/workflows/gece-yayini.yml).
-export const dynamicParams = false;
+// Derlemede bilinen sayfalar üretilir; eşiği sonradan geçen ilçe ya da kategori sayfası (ör. Samsun'a 17.11.2026'da
+// toplu yüklenen işletmeler) ilk ziyarette üretilir ve saatte bir yenilenir, yeniden yayın beklemez. Bilinmeyen adres
+// gerçek 404 alır: kök app/loading.tsx 18.11.2026'da kaldırıldı, çünkü yükleniyor ekranı yanıtı akış olarak başlattığı
+// için notFound() durum kodunu 200 bırakıyor ve olmayan adresler dizine açık sayfa gibi görünüyordu.
+export const dynamicParams = true;
 
 interface PageProps {
   params: Promise<{ sehir: string; alt: string }>;

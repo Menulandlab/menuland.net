@@ -20,8 +20,8 @@ import { GezintiIzi, IsletmeIzgarasi, BaglantiCipleri, EkosistemBolumu, SehirYak
 // İl sayfası: açık illerde ilçe ve kategori sayfalarına giden ana sayfa, diğer illerde "yakında" sayfası.
 // Veri saatte bir yenilenir.
 export const revalidate = 3600;
-// Yalnızca derlemede üretilen adresler vardır; bilinmeyen adresler gerçek 404 alır (sitenin kök loading.tsx'i
-// yüzünden sayfa içinden çağrılan notFound() durum kodunu 200 bırakıyordu). 81 ilin hepsi derlemede üretilir.
+// 81 ilin hepsi derlemede üretilir; il listesi sabit olduğu için başka adres il sayfası olamaz ve doğrudan 404 alır.
+// İlin içeriği (açık ya da yakında) saatte bir yenilenir.
 export const dynamicParams = false;
 
 interface PageProps {
