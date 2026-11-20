@@ -1,8 +1,15 @@
 'use client';
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function WhatsAppSupportButton() {
+  const yol = usePathname();
+  // Kurucu kararı (21.11.2026): işletme sayfalarında ve onların altındaki menü yönlendirme sayfasında gösterilmez.
+  // Düğme mobilde sayfanın altındaki içeriğin üstüne biniyordu. Sayfanın kendi bağlantıları (işletme sahibi daveti,
+  // bilgi düzeltme) yerinde kalır.
+  if (yol?.startsWith('/business/')) return null;
+
   const phoneNumber = '908508401302';
   // Mesajın sonundaki kod, yazanın hangi butondan geldiğini gösterir (WEB-ALT: altbilgi).
   const defaultMessage = encodeURIComponent('Merhaba, Menuland hakkında bilgi almak istiyorum.\n\n(Kod: WEB-BUTON)');
