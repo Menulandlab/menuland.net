@@ -8,7 +8,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import BusinessGallery from '../../../components/BusinessGallery';
-import { Star, MapPin, Phone, Globe, Calendar, Tag, ShieldCheck, Heart, Share2, AlertTriangle, ShoppingBag, Utensils, Compass } from 'lucide-react';
+import { Star, MapPin, Phone, Globe, Calendar, Tag, ShieldCheck, Heart, Share2, AlertTriangle, ShoppingBag, Utensils, Compass, ExternalLink } from 'lucide-react';
+import { disMenu, disMenuSayfasi } from '@/lib/disMenu';
 import { extractIdFromSlug, getBusinessUrl } from '../../../lib/utils';
 import { SITE_URL, DEFAULT_OG_IMAGE, KURUMSAL_URL, jsonLd, kisalt, whatsappBaglantisi } from '@/lib/site';
 import { GezintiIzi } from '@/components/SehirSayfasi';
@@ -204,6 +205,8 @@ export default async function BusinessDetail({ params }: PageProps) {
   const menuVar =
     (menuMode === 'daily' && Array.isArray(dailyMenuData?.today_items) && dailyMenuData.today_items.length > 0) ||
     (menuMode === 'fixed' && Array.isArray(fixedMenuData?.categories) && fixedMenuData.categories.length > 0);
+  // Menuland'de menüsü olmayan işletmenin kendi menü bağlantısı (varsa yönlendirme sayfasıyla gösterilir)
+  const disMenuBilgisi = menuVar ? null : disMenu(business.menu_url);
   // Sokak adresi 16.11.2026 göçüyle gelen "adres" alanında; eski kayıtlarda "address" de olabilir.
   const adres: string | null = business.adres || business.address || null;
   const enlem = Number(business.latitude);
@@ -445,8 +448,51 @@ export default async function BusinessDetail({ params }: PageProps) {
               </div>
             )}
 
+            {/* Menü Menuland'de değil ama işletmenin kendi bağlantısı var (20.11.2026): ziyaretçi önce yasal
+                bilgilendirme ve işletme sahibine davet içeren yönlendirme sayfasına gider. */}
+            {!menuVar && disMenuBilgisi && (
+              <div className="flex flex-col items-center gap-3 py-10 text-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF4ED] text-[#D63F00]">
+                  <ExternalLink className="h-5 w-5" />
+                </span>
+                <p className="max-w-md text-base font-semibold text-zinc-900">
+                  {business.name} menüsünü kendi bağlantısında yayınlıyor.
+                </p>
+                <p className="text-sm text-zinc-500">
+                  Menü <span className="font-medium text-zinc-700">{disMenuBilgisi.alanAdi}</span> adresinde açılır.
+                </p>
+                {disMenuBilgisi.menuland ? (
+                  <a
+                    href={disMenuBilgisi.adres}
+                    className="mt-2 rounded-full bg-[#D63F00] px-6 py-3 text-sm font-bold text-white hover:bg-[#B83600]"
+                  >
+                    Menüyü görüntüle
+                  </a>
+                ) : (
+                  <Link
+                    href={disMenuSayfasi(getBusinessUrl(business))}
+                    rel="nofollow"
+                    prefetch={false}
+                    className="mt-2 rounded-full bg-[#D63F00] px-6 py-3 text-sm font-bold text-white hover:bg-[#B83600]"
+                  >
+                    Menüyü görüntüle
+                  </Link>
+                )}
+                <a
+                  href={whatsappBaglantisi(
+                    `Merhaba, ${business.name} (#${business.id}) işletmesinin sahibiyim. Menümü Menuland'e taşımak istiyorum.`,
+                    'WEB-SAHIPLEN'
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 text-xs font-semibold text-[#D63F00] hover:underline"
+                >
+                  Bu işletme sizin mi? Menünüzü Menuland&apos;e taşıyalım
+                </a>
+              </div>
+            )}
             {/* Menü yoksa ya da boşsa (kategori veya ürün yoksa) bilgi ve işletme sahibine davet gösterilir. */}
-            {!menuVar && (
+            {!menuVar && !disMenuBilgisi && (
               <div className="text-center py-12 text-zinc-500 flex flex-col items-center gap-2">
                 <Compass className="h-8 w-8 text-zinc-300" />
                 <p>Bu işletmenin menüsü henüz yüklenmedi veya güncelleniyor.</p>
