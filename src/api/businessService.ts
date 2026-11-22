@@ -43,6 +43,8 @@ export const getBusinesses = async (params: {
   lon?: number;
   limit?: number;
   ids?: number[];
+  /** 'liste': hafif yanıt (açıklama kısaltılmış, yasal metin ve görsel alanlarının çoğu gelmez). */
+  alanlar?: 'liste';
 }): Promise<BusinessResponse[]> => {
   try {
     const response = await publicApiClient.get('/businesses', { params });

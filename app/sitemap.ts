@@ -60,7 +60,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   //    olanlar girer; pasif işletmenin sayfası noindex taşır (16.11.2026).
   let businessPages: MetadataRoute.Sitemap = [];
   try {
-    const businesses = (await getBusinesses({ limit: 1000 })).filter((biz: any) => {
+    // alanlar=liste: yalnızca kimlik, ad, slug ve durum gibi hafif alanlar gelir (bütün sütunlar yerine). Sayfa
+    // gönderilmediği için API bütün işletmeleri döndürür; limit verilmez.
+    const businesses = (await getBusinesses({ alanlar: 'liste' })).filter((biz: any) => {
       const durum = biz.status;
       const aktif = biz.is_active;
       return (durum === undefined || durum === 'approved') && (aktif === undefined || aktif === null || Number(aktif) === 1);

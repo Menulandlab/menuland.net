@@ -1,4 +1,5 @@
-import { getBusinesses, getBusinessListingCategories } from '@/src/api/businessService';
+import { getBusinessListingCategories, type BusinessResponse } from '@/src/api/businessService';
+import { publicApiClient } from '@/src/api/client';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -7,12 +8,18 @@ import { getBusinessUrl, extractIdFromSlug, getCategoryUrl } from '../../../lib/
 import { DEFAULT_OG_IMAGE } from '@/lib/site';
 import { kategorininSehirSayfalari } from '@/lib/sehirSayfalari';
 
+// Sayfa başına 24 işletme (22.11.2026). Önce kategorideki bütün işletmeler tek sayfada çiziliyordu; zincir
+// şubeleri yüklenince "Fast Food" gibi kategorilerde 2.000'den fazla işletme tek sayfaya düşerdi.
+const SAYFA_BOYU = 24;
+
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ sayfa?: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params, searchParams }: PageProps) {
   const { id: urlParam } = await params;
+  const no = Math.max(1, Number((await searchParams).sayfa) || 1);
   const id = extractIdFromSlug(urlParam);
   const categories = await getBusinessListingCategories().catch(() => []);
   const activeCategory = categories.find(c => String(c.id) === id);
@@ -20,15 +27,16 @@ export async function generateMetadata({ params }: PageProps) {
   if (!activeCategory) return { title: 'Kategori Bulunamadı', robots: { index: false, follow: true } };
   
   return {
-    title: `${categoryName} Menüleri ve Fiyatları`,
-    alternates: activeCategory ? { canonical: getCategoryUrl(activeCategory) } : undefined,
+    title: no > 1 ? `${categoryName} Menüleri ve Fiyatları · Sayfa ${no}` : `${categoryName} Menüleri ve Fiyatları`,
+    alternates: { canonical: no > 1 ? `${getCategoryUrl(activeCategory)}?sayfa=${no}` : getCategoryUrl(activeCategory) },
     openGraph: { title: `${categoryName} Menüleri ve Fiyatları | Menuland`, images: [DEFAULT_OG_IMAGE] },
     description: `En popüler ${categoryName} mekanlarının güncel dijital menülerini, fiyatlarını, adres ve telefon bilgilerini Menuland'de inceleyin.`,
   };
 }
 
-export default async function CategoryPage({ params }: PageProps) {
+export default async function CategoryPage({ params, searchParams }: PageProps) {
   const { id: urlParam } = await params;
+  const sayfaNo = Math.max(1, Number((await searchParams).sayfa) || 1);
   const id = extractIdFromSlug(urlParam);
   
   const cookieStore = await cookies();
@@ -44,16 +52,28 @@ export default async function CategoryPage({ params }: PageProps) {
   if (!activeCategory) notFound();
   const categoryName = activeCategory?.name || 'Mekanlar';
 
-  // Filtreleme parametrelerini ayarla
-  const businessParams: any = { category_id: Number(id), limit: 24 };
+  // Filtreleme parametrelerini ayarla. page gönderilince API sayfalı yanıt verir ({data, total}); limit yalnızca o zaman
+  // uygulanır. siralama=oneri: önce Seçkin, sonra menülü, sonra fotoğraflı işletmeler; yalnızca onaylı ve aktif olanlar.
+  const businessParams: Record<string, string | number> = {
+    category_id: Number(id),
+    page: sayfaNo,
+    limit: SAYFA_BOYU,
+    siralama: 'oneri',
+  };
   if (cityId) businessParams.city_id = cityId;
   if (districtId) businessParams.district_id = districtId;
 
   // Seçili kategoriye ve konuma özel işletmeleri çek
-  const [businesses, sehirSayfalari] = await Promise.all([
-    getBusinesses(businessParams).catch(() => []),
+  const [yanit, sehirSayfalari] = await Promise.all([
+    publicApiClient.get('/businesses', { params: businessParams }).catch(() => null),
     kategorininSehirSayfalari(Number(id)),
   ]);
+  const businesses: (BusinessResponse & { adres?: string | null })[] = Array.isArray(yanit?.data?.data) ? yanit.data.data : [];
+  const toplam = Number(yanit?.data?.total) || businesses.length;
+  const sayfaSayisi = Math.max(1, Math.ceil(toplam / SAYFA_BOYU));
+  // Var olmayan sayfa numarası gerçek 404 olur (boş sayfa dizine girmesin).
+  if (sayfaNo > 1 && businesses.length === 0) notFound();
+  const sayfaAdresi = (no: number) => (no > 1 ? `${getCategoryUrl(activeCategory)}?sayfa=${no}` : getCategoryUrl(activeCategory));
 
   // SEO için açıklama metni oluştur
   const seoDescription = `En popüler ${categoryName} mekanlarının güncel dijital menüleri ve yemek fiyatları Menuland'de. ${cityName ? `${cityName} (${districtName || 'tüm ilçeler'}) bölgesindeki` : 'Tüm Türkiye genelindeki'} en iyi restoranları, kafeleri ve yemek noktalarını hemen keşfedin, fiyat listelerini karşılaştırın.`;
@@ -154,16 +174,32 @@ export default async function CategoryPage({ params }: PageProps) {
                     {biz.description}
                   </p>
                 )}
-                {biz.address && (
+                {(biz.adres || biz.address) && (
                   <span className="text-xs text-zinc-400 truncate mt-2 flex items-center gap-1">
                     <MapPin className="h-3 w-3 text-zinc-400" />
-                    {biz.address}
+                    {biz.adres || biz.address}
                   </span>
                 )}
               </div>
             </Link>
           ))}
         </div>
+      )}
+
+      {sayfaSayisi > 1 && (
+        <nav aria-label="Sayfalar" className="flex items-center justify-center gap-4 text-sm">
+          {sayfaNo > 1 && (
+            <Link href={sayfaAdresi(sayfaNo - 1)} rel="prev" className="font-semibold text-[#FF4D00]">
+              ← Önceki
+            </Link>
+          )}
+          <span className="text-zinc-500">{`Sayfa ${sayfaNo} / ${sayfaSayisi} (${toplam} mekân)`}</span>
+          {sayfaNo < sayfaSayisi && (
+            <Link href={sayfaAdresi(sayfaNo + 1)} rel="next" className="font-semibold text-[#FF4D00]">
+              Sonraki →
+            </Link>
+          )}
+        </nav>
       )}
 
     </div>
