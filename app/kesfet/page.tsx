@@ -2,7 +2,7 @@ import { webPublicClient } from '../../lib/api';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Calendar, Compass, MapPin, Map, ArrowLeft, Ticket, Landmark, Music, TreePine, GlassWater, Landmark as Museum } from 'lucide-react';
-import YandexAdBanner from '@/components/YandexAdBanner';
+import ReklamAlani from '@/components/ReklamAlani';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -154,10 +154,7 @@ export default async function DiscoverPage() {
         )}
       </section>
 
-      {/* Keşfet Sponsorlu Reklam Alanı */}
-      <div className="w-full -my-4">
-        <YandexAdBanner />
-      </div>
+      <ReklamAlani yer="kesfet" />
 
       {/* 2. Şehri Keşfet Bölümü */}
       {categories.length > 0 && (

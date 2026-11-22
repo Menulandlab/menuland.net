@@ -2,24 +2,26 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
-import Script from 'next/script';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { CEREZ_TERCIHLERI_OLAYI, kayitliTercih, tercihiKaydet, useCerezTercihi } from '../lib/cerezTercihi';
+import { reklamCereziMi } from '../lib/reklam';
 
 /**
- * Çerez onayı (KVKK çerez rehberi): zorunlu çerezler her zaman çalışır; Google Analytics ve Yandex
- * reklamları yalnızca ziyaretçi onay verirse yüklenir. Tercih tarayıcıda saklanır ve alt bilgideki
+ * Çerez onayı (KVKK çerez rehberi): zorunlu çerezler her zaman çalışır; Google Analytics ve Google
+ * AdSense reklamları yalnızca ziyaretçi onay verirse yüklenir. Tercih tarayıcıda saklanır ve alt bilgideki
  * "Çerez tercihleri" bağlantısından istenildiği zaman değiştirilebilir.
  */
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-PKW5J07KW0';
 
-/** Onay geri alındığında Google Analytics'in bu alan adında bıraktığı çerezleri siler. */
-function analizCerezleriniSil() {
+const analizCereziMi = (ad: string) => ad === '_ga' || ad.startsWith('_ga_') || ad === '_gid' || ad === '_gat';
+
+/** Onay geri alındığında Google Analytics'in ya da reklam ağlarının bu alan adında bıraktığı çerezleri siler. */
+function cerezleriSil(silinir: (ad: string) => boolean) {
   const adlar = document.cookie
     .split(';')
     .map((cerez) => cerez.trim().split('=')[0])
-    .filter((ad) => ad === '_ga' || ad.startsWith('_ga_') || ad === '_gid' || ad === '_gat');
+    .filter(silinir);
   const host = window.location.hostname;
   const alanlar = new Set(['', host, `.${host}`]);
   if (host.endsWith('menuland.net')) alanlar.add('.menuland.net');
@@ -45,6 +47,11 @@ export default function CookieConsent() {
   const [taslakAnaliz, setTaslakAnaliz] = useState(false);
   const [taslakReklam, setTaslakReklam] = useState(false);
 
+  // Yandex reklamları 22.11.2026'da kaldırıldı; daha önce onay vermiş ziyaretçide kalan Yandex çerezleri silinir.
+  useEffect(() => {
+    if (document.cookie.includes('_ym_')) cerezleriSil((ad) => ad.startsWith('_ym_'));
+  }, []);
+
   useEffect(() => {
     const ac = () => {
       const mevcut = kayitliTercih();
@@ -63,7 +70,8 @@ export default function CookieConsent() {
     // Yüklenmiş bir betik sayfadan sökülemez; daha önce verilen onay geri alındıysa sayfa yenilenir.
     const geriAlindi = (onceki?.analiz && !analiz) || (onceki?.reklam && !reklam);
     if (geriAlindi) {
-      if (onceki?.analiz && !analiz) analizCerezleriniSil();
+      if (onceki?.analiz && !analiz) cerezleriSil(analizCereziMi);
+      if (onceki?.reklam && !reklam) cerezleriSil(reklamCereziMi);
       window.location.reload();
     }
   };
@@ -73,9 +81,6 @@ export default function CookieConsent() {
   return (
     <>
       {tercih?.analiz && gaIzinliAlan && <GoogleAnalytics gaId={GA_ID} />}
-      {tercih?.reklam && (
-        <Script id="yandex-rtb-context" src="https://yandex.com.tr/ads/system/context.js" strategy="afterInteractive" />
-      )}
 
       {afisGoster && (
         <section
@@ -89,7 +94,7 @@ export default function CookieConsent() {
           </h2>
           <p id="cerez-metin" className="mt-2 text-sm leading-relaxed text-zinc-600">
             Sitenin çalışması için gerekli çerezleri her zaman kullanırız. Ziyaretleri ölçmek için Google Analytics,
-            reklam göstermek için Yandex çerezlerini ise yalnızca onay verirseniz kullanırız. Ayrıntılar{' '}
+            reklam göstermek için Google AdSense çerezlerini ise yalnızca onay verirseniz kullanırız. Ayrıntılar{' '}
             <Link href="/gizlilik-politikasi" className="font-semibold text-[#FF4D00] underline underline-offset-2">
               Gizlilik Politikası
             </Link>
@@ -178,7 +183,7 @@ export default function CookieConsent() {
               <label htmlFor="cerez-reklam" className="cursor-pointer">
                 <span className="block text-sm font-semibold text-zinc-900">Reklam çerezleri</span>
                 <span className="mt-0.5 block text-xs leading-relaxed text-zinc-500">
-                  Yandex reklam ağı, reklam göstermek ve ölçmek için çerez kullanır.
+                  Google AdSense, reklam göstermek ve ölçmek için çerez kullanır.
                 </span>
               </label>
               <input

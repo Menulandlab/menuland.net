@@ -9,7 +9,7 @@ import WhatsAppSupportButton from "../components/WhatsAppSupportButton";
 import ProtectionProvider from "../components/ProtectionProvider";
 import { LocationProvider } from "../context/LocationContext";
 import CookieConsent from "../components/CookieConsent";
-import Script from 'next/script';
+import { ADSENSE_YAYINCI } from "@/lib/reklam";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +40,11 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+  },
+  // Google AdSense site doğrulaması (meta etiketi yöntemi). Çerez kullanmaz; reklam betiği yalnızca
+  // ziyaretçi reklam çerezlerine onay verirse yüklenir (components/ReklamAlani.tsx).
+  other: {
+    "google-adsense-account": ADSENSE_YAYINCI,
   },
   robots: {
     index: true,
@@ -72,10 +77,6 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-white text-zinc-900">
-        {/* Yandex.RTB: burada yalnızca reklam kuyruğu hazırlanır; reklam betiği çerez onayından sonra yüklenir (CookieConsent). */}
-        <Script id="yandex-rtb-init" strategy="afterInteractive">
-          {`window.yaContextCb=window.yaContextCb||[]`}
-        </Script>
         <ProtectionProvider>
           <AuthProvider>
             <LocationProvider>

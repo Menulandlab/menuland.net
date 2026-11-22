@@ -105,3 +105,8 @@ body:has(dialog[open]) {
   width: 100%;
 }
 
+
+/* Google AdSense reklam döndürmezse (doluluk yok) boş kutu ve "Reklam" etiketi görünmez. */
+aside[aria-label="Reklam"]:has(ins.adsbygoogle[data-ad-status="unfilled"]) {
+  display: none;
+}

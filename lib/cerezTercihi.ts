@@ -6,7 +6,12 @@ import { useMemo, useSyncExternalStore } from 'react';
  */
 
 export const DEPO_ANAHTARI = 'menuland_cerez_tercihi';
-const SURUM = 1;
+/**
+ * 2. sürüm (22.11.2026): reklam ağı Yandex'ten Google AdSense'e geçti. Yandex reklamlarına verilen onay
+ * Google için geçerli sayılmaz; o ziyaretçilere pencere yeniden sorulur. Reklamı reddetmiş olanların
+ * tercihi aynen korunur, onlara yeniden sorulmaz.
+ */
+const SURUM = 2;
 /** Alt bilgideki bağlantı bu olayı yayınlar; çerez penceresi tercih ayarlarıyla yeniden açılır. */
 export const CEREZ_TERCIHLERI_OLAYI = 'menuland:cerez-tercihleri-ac';
 
@@ -36,7 +41,10 @@ function tercihiCoz(ham: string): CerezTercihi | null {
   if (!ham || ham === SUNUCU_ANLIK) return null;
   try {
     const t = JSON.parse(ham);
-    if (t && t.surum === SURUM && typeof t.analiz === 'boolean' && typeof t.reklam === 'boolean') return t;
+    if (!t || typeof t.analiz !== 'boolean' || typeof t.reklam !== 'boolean') return null;
+    if (t.surum === SURUM) return t;
+    // 1. sürümde reklamı reddeden ziyaretçinin kararı değişmedi; analiz tercihiyle birlikte korunur.
+    if (t.surum === 1 && t.reklam === false) return { ...t, surum: SURUM };
   } catch {
     // Bozuk kayıt: tercih yokmuş gibi davranılır, pencere yeniden sorar.
   }

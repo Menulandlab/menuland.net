@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getBlogPostBySlug, getBlogPosts, formatBlogContent } from '@/src/api/blogService';
 import { ArrowLeft, Calendar, Clock, User, Share2, Tag, BookOpen } from 'lucide-react';
-import YandexAdBanner from '@/components/YandexAdBanner';
+import ReklamAlani from '@/components/ReklamAlani';
 import BlogCtaCard from '@/components/BlogCtaCard';
 import { SITE_URL, jsonLd } from '@/lib/site';
 
@@ -142,10 +142,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       {/* Yazı Sonu Çağrı Kartı (CTA Card - İşletmeler veya Kullanıcılar İçin) */}
       <BlogCtaCard type={post.cta_card} />
 
-      {/* Makale Sonu Sponsorlu Reklam Alanı */}
-      <div className="w-full -my-2">
-        <YandexAdBanner />
-      </div>
+      <ReklamAlani yer="blog-yazi-sonu" />
 
       {/* İlgili / Önerilen Yazılar */}
       {relatedPosts.length > 0 && (

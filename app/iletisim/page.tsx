@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft, Mail, MessageSquare, ShieldAlert, MapPin, Clock, PhoneCall, CheckCircle2 } from 'lucide-react';
+import { whatsappBaglantisi } from '@/lib/site';
 
 export const metadata = {
   title: 'İletişim - Bize Ulaşın',
@@ -35,7 +36,7 @@ export default function ContactPage() {
             <div>
               <h2 className="text-lg font-bold text-zinc-950">Ziyaretçi & Kullanıcı Destek</h2>
               <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
-                Mekan bilgileri, menü geri bildirimleri, öneriler ve mobil uygulama kullanımı ile ilgili tüm sorularınız için.
+                İşletme bilgileri, menü geri bildirimleri, öneriler ve mobil uygulama kullanımı ile ilgili sorularınız için.
               </p>
             </div>
           </div>
@@ -84,11 +85,12 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs text-zinc-600">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5 font-bold text-zinc-900">
-              <MapPin className="h-4 w-4 text-[#FF4D00]" /> Genel Merkez
+              <MapPin className="h-4 w-4 text-[#FF4D00]" /> Yasal Adres
             </div>
             <p className="text-zinc-500 leading-relaxed">
-              MLD Yazılım ve Bilişim Teknolojileri<br />
-              Altınordu, Ordu / Türkiye
+              MLD Yazılım<br />
+              Durugöl Mah. Atatürk Bulvarı No: 451/211<br />
+              Altınordu / Ordu
             </p>
           </div>
 
@@ -104,9 +106,18 @@ export default function ContactPage() {
 
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-1.5 font-bold text-zinc-900">
-              <PhoneCall className="h-4 w-4 text-[#FF4D00]" /> Yanıt Süresi
+              <PhoneCall className="h-4 w-4 text-[#FF4D00]" /> WhatsApp ve Yanıt Süresi
             </div>
             <p className="text-zinc-500 leading-relaxed">
+              <a
+                href={whatsappBaglantisi('Merhaba, Menuland hakkında yazıyorum.', 'WEB-ILETISIM')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-[#FF4D00] hover:underline"
+              >
+                WhatsApp: 0850 840 13 02
+              </a>
+              <br />
               Mesajlarınızı çalışma saatlerimiz içinde en kısa sürede yanıtlamaya çalışıyoruz. Pazar günü ve mesai dışında gelen mesajlar bir sonraki çalışma gününde ele alınır.
             </p>
           </div>

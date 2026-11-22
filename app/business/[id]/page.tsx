@@ -13,7 +13,7 @@ import { disMenu, disMenuSayfasi } from '@/lib/disMenu';
 import { extractIdFromSlug, getBusinessUrl } from '../../../lib/utils';
 import { SITE_URL, DEFAULT_OG_IMAGE, KURUMSAL_URL, jsonLd, kisalt, whatsappBaglantisi } from '@/lib/site';
 import { GezintiIzi } from '@/components/SehirSayfasi';
-import YandexAdBanner from '@/components/YandexAdBanner';
+import ReklamAlani from '@/components/ReklamAlani';
 import { isletmeninSayfalari } from '@/lib/sehirSayfalari';
 
 interface PageProps {
@@ -207,6 +207,10 @@ export default async function BusinessDetail({ params }: PageProps) {
     (menuMode === 'fixed' && Array.isArray(fixedMenuData?.categories) && fixedMenuData.categories.length > 0);
   // Menuland'de menüsü olmayan işletmenin kendi menü bağlantısı (varsa yönlendirme sayfasıyla gösterilir)
   const disMenuBilgisi = menuVar ? null : disMenu(business.menu_url);
+  // Reklam yalnızca Menuland menüsü olan, aktif işletmenin sayfasında: menüsüz sayfada özgün içerik az
+  // (AdSense: az içerikli sayfaya reklam kodu konmaz).
+  const pasif = business.is_active !== undefined && business.is_active !== null && Number(business.is_active) === 0;
+  const reklamUygun = menuVar && !pasif;
   // Sokak adresi 16.11.2026 göçüyle gelen "adres" alanında; eski kayıtlarda "address" de olabilir.
   const adres: string | null = business.adres || business.address || null;
   const enlem = Number(business.latitude);
@@ -345,10 +349,7 @@ export default async function BusinessDetail({ params }: PageProps) {
             />
           )}
 
-          {/* Sidebar Sponsorlu Reklam Alanı */}
-          <div className="w-full">
-            <YandexAdBanner containerId="yandex_rtb_R-A-20154632-1" />
-          </div>
+          {reklamUygun && <ReklamAlani yer="isletme-yan" />}
         </div>
 
         {/* Menu & Details (Left col on desktop, second on mobile) */}
@@ -520,10 +521,7 @@ export default async function BusinessDetail({ params }: PageProps) {
             )}
           </section>
 
-          {/* Menü Altı / Yorumlar Üstü Sponsorlu Reklam */}
-          <div className="w-full -my-2">
-            <YandexAdBanner containerId="yandex_rtb_R-A-20154632-1-menu" />
-          </div>
+          {reklamUygun && <ReklamAlani yer="isletme-menu-alti" />}
 
           {/* Comments Section */}
           <section className="rounded-3xl border border-gray-100 bg-white p-6 sm:p-8 flex flex-col gap-6">

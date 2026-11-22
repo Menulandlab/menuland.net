@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { getBlogPosts } from '@/src/api/blogService';
 import { DEFAULT_OG_IMAGE } from '@/lib/site';
 import { Clock, Calendar, ArrowRight, BookOpen, ArrowLeft } from 'lucide-react';
-import YandexAdBanner from '@/components/YandexAdBanner';
+import ReklamAlani from '@/components/ReklamAlani';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -46,10 +46,7 @@ export default async function BlogPage() {
         </p>
       </div>
 
-      {/* Blog Listesi Üstü Sponsorlu Banner */}
-      <div className="w-full -my-2">
-        <YandexAdBanner />
-      </div>
+      <ReklamAlani yer="blog-liste" />
 
       {/* Makale Listesi Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

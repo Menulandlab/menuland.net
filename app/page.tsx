@@ -41,7 +41,7 @@ const anaSayfaJsonLd = {
     },
   ],
 };
-import YandexAdBanner from '@/components/YandexAdBanner';
+import ReklamAlani from '@/components/ReklamAlani';
 import { acikSehirler } from '@/lib/sehirSayfalari';
 
 export default async function Home() {
@@ -102,11 +102,6 @@ export default async function Home() {
           </form>
         </div>
       </section>
-
-      {/* Hero Altı Sponsorlu Reklam Alanı */}
-      <div className="max-w-4xl mx-auto w-full -my-6">
-        <YandexAdBanner containerId="yandex_rtb_R-A-20154632-1" />
-      </div>
 
       {/* Categories */}
       {categories.length > 0 && (
@@ -225,7 +220,10 @@ export default async function Home() {
         )}
       </section>
 
-      {/* Lezzet & Şehir Rehberi Bölümü (AdSense Kalite & SEO İçeriği) */}
+      {/* Reklam: iki içerik bölümünün arasında; arama kutusuna ve kategori bağlantılarına yakın değil. */}
+      <ReklamAlani yer="ana-sayfa-orta" />
+
+      {/* Lezzet & Şehir Rehberi Bölümü */}
       <section className="flex flex-col gap-6 pt-4">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
@@ -279,10 +277,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Sayfa Altı Geniş Sponsorlu Reklam */}
-      <section className="w-full">
-        <YandexAdBanner containerId="yandex_rtb_R-A-20154632-1-bottom" />
-      </section>
+      <ReklamAlani yer="ana-sayfa-alt" />
 
     </div>
   );
