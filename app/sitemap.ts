@@ -1,10 +1,11 @@
 import { MetadataRoute } from 'next';
-import { getBusinesses, getBusinessListingCategories } from '@/src/api/businessService';
+import { getBusinessListingCategories } from '@/src/api/businessService';
+import { publicApiClient } from '@/src/api/client';
 import { getBusinessUrl, getCategoryUrl } from '@/lib/utils';
 import { getBlogPosts } from '@/src/api/blogService';
 import { getAllDocsArticles } from '@/src/data/docs-data';
 import { SITE_URL } from '@/lib/site';
-import { acikSehirler, sehirVerisi, tumSehirler, yerVerisi, EN_AZ_YER } from '@/lib/sehirSayfalari';
+import { acikSehirVerileri, tumSehirler, yerVerisi, EN_AZ_YER } from '@/lib/sehirSayfalari';
 
 type Siklik = MetadataRoute.Sitemap[number]['changeFrequency'];
 
@@ -16,8 +17,39 @@ type Siklik = MetadataRoute.Sitemap[number]['changeFrequency'];
 // Site haritası saatte bir yenilenir (önce yalnızca yayında üretiliyordu); gece yayını da yeniler.
 export const revalidate = 3600;
 
+/**
+ * Bütün işletmeler tek istekte. alanlar=liste: kimlik, ad, slug, il, ilçe, kategori ve durum gibi hafif alanlar gelir;
+ * sayfa gönderilmediği için API hepsini döndürür. İşletme, il, ilçe ve kategori adreslerinin hepsi bu listeden çıkar.
+ *
+ * Liste gelmezse hata fırlatılır: yayında derleme durur, saatlik yenilemede önceki harita yerinde kalır. Böylece
+ * işletmesiz ya da şehirsiz bir harita yayınlanmaz.
+ */
+async function tumIsletmeler(): Promise<Array<Record<string, any>>> {
+  // 23.11.2026'da 3.978 işletmede yanıt yaklaşık 3,5 MB; istemcinin 15 saniyelik varsayılan süresi yerine 60 saniye.
+  const yanit = await publicApiClient.get('/businesses', { params: { alanlar: 'liste' }, timeout: 60000 });
+  const liste = Array.isArray(yanit.data) ? yanit.data : [];
+  if (liste.length === 0) {
+    throw new Error('Site haritası: işletme listesi boş geldi');
+  }
+  return liste;
+}
+
+/** Gezilecek yerler sayfası olan illerin adresleri (en az EN_AZ_YER gösterilebilir yeri olanlar). */
+async function gezilecekYerSehirleri(): Promise<string[]> {
+  const adaylar = (await tumSehirler()).filter((s) => s.yerSayisi >= EN_AZ_YER);
+  const veriler = await Promise.all(adaylar.map((s) => yerVerisi(s.slug)));
+  return adaylar.filter((_, i) => veriler[i] !== null).map((s) => s.slug);
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL;
+
+  // Uzun süren istekler birlikte başlar (önce sırayla bekleniyordu).
+  const [dynamicBlogPosts, isletmeler, yerSehirleri] = await Promise.all([
+    getBlogPosts(),
+    tumIsletmeler(),
+    gezilecekYerSehirleri(),
+  ]);
 
   // 1. Statik sayfalar
   const statik: Array<[string, Siklik, number]> = [
@@ -41,7 +73,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // 2. Blog ve rehber yazıları
-  const dynamicBlogPosts = await getBlogPosts();
   const blogPages: MetadataRoute.Sitemap = dynamicBlogPosts.map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
     ...(post.published_at ? { lastModified: new Date(post.published_at) } : {}),
@@ -58,31 +89,43 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 4. İşletmeler (menüsü olsun olmasın hepsi; marka görünürlüğü için dizinde kalırlar). Yalnızca onaylı ve aktif
   //    olanlar girer; pasif işletmenin sayfası noindex taşır (16.11.2026).
-  let businessPages: MetadataRoute.Sitemap = [];
-  try {
-    // alanlar=liste: yalnızca kimlik, ad, slug ve durum gibi hafif alanlar gelir (bütün sütunlar yerine). Sayfa
-    // gönderilmediği için API bütün işletmeleri döndürür; limit verilmez.
-    const businesses = (await getBusinesses({ alanlar: 'liste' })).filter((biz: any) => {
+  const businessPages: MetadataRoute.Sitemap = isletmeler
+    .filter((biz) => {
       const durum = biz.status;
       const aktif = biz.is_active;
       return (durum === undefined || durum === 'approved') && (aktif === undefined || aktif === null || Number(aktif) === 1);
-    });
-    businessPages = businesses.map((biz) => ({
-      url: `${baseUrl}${getBusinessUrl(biz)}`,
+    })
+    .map((biz) => ({
+      url: `${baseUrl}${getBusinessUrl(biz as { id: number; slug?: string | null; name?: string })}`,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     }));
-  } catch (error) {
-    console.error('Sitemap businesses fetch error:', error);
+
+  // 5. Şehir, ilçe, şehir × kategori ve gezilecek yerler sayfaları. Yalnızca açık iller (en az 3 işletmeli) ve sayfası
+  //    oluşan ilçe ve kategoriler girer; "yakında" il sayfaları noindex taşıdığı için haritaya girmez.
+  //    Bu bölüm hata verirse derleme durur: şehir sayfaları olmadan yayına çıkılmaz.
+  const sehirVerileri = await acikSehirVerileri(isletmeler);
+  const sehirPages: MetadataRoute.Sitemap = [];
+  for (const veri of sehirVerileri) {
+    const slug = veri.sehir.slug;
+    sehirPages.push({ url: `${baseUrl}/${slug}`, changeFrequency: 'weekly', priority: 0.85 });
+    for (const d of veri.ilceler) {
+      sehirPages.push({ url: `${baseUrl}/${slug}/${d.slug}`, changeFrequency: 'weekly', priority: 0.8 });
+    }
+    for (const k of veri.kategoriler) {
+      sehirPages.push({ url: `${baseUrl}/${slug}/${k.slug}`, changeFrequency: 'weekly', priority: 0.75 });
+    }
+  }
+  for (const slug of yerSehirleri) {
+    sehirPages.push({ url: `${baseUrl}/${slug}/gezilecek-yerler`, changeFrequency: 'weekly', priority: 0.75 });
   }
 
-  // 5. Kategoriler: yalnızca en az bir açık ilde işletmesi olanlar (boş kategori sayfası haritaya girmez).
+  // 6. Kategoriler: yalnızca en az bir açık ilde işletmesi olanlar (boş kategori sayfası haritaya girmez).
   let categoryPages: MetadataRoute.Sitemap = [];
   try {
     const doluKategoriler = new Set<number>();
-    for (const s of await acikSehirler()) {
-      const veri = await sehirVerisi(s.slug);
-      for (const i of veri?.isletmeler || []) for (const k of i.kategoriIdleri) doluKategoriler.add(k);
+    for (const veri of sehirVerileri) {
+      for (const i of veri.isletmeler) for (const k of i.kategoriIdleri) doluKategoriler.add(k);
     }
     const categories = (await getBusinessListingCategories()).filter((cat) => doluKategoriler.has(Number(cat.id)));
     categoryPages = categories.map((cat) => ({
@@ -92,30 +135,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch (error) {
     console.error('Sitemap categories fetch error:', error);
-  }
-
-  // 6. Şehir, ilçe, şehir × kategori ve gezilecek yerler sayfaları. Yalnızca açık iller (en az 3 işletmeli) ve sayfası
-  //    oluşan ilçe ve kategoriler girer; "yakında" il sayfaları noindex taşıdığı için haritaya girmez.
-  //    Bu bölüm hata verirse derleme durur: şehir sayfaları olmadan yayına çıkılmaz.
-  const sehirPages: MetadataRoute.Sitemap = [];
-  {
-    const sehirler = await acikSehirler();
-    for (const s of sehirler) {
-      const veri = await sehirVerisi(s.slug);
-      if (!veri) continue;
-      sehirPages.push({ url: `${baseUrl}/${s.slug}`, changeFrequency: 'weekly', priority: 0.85 });
-      for (const d of veri.ilceler) {
-        sehirPages.push({ url: `${baseUrl}/${s.slug}/${d.slug}`, changeFrequency: 'weekly', priority: 0.8 });
-      }
-      for (const k of veri.kategoriler) {
-        sehirPages.push({ url: `${baseUrl}/${s.slug}/${k.slug}`, changeFrequency: 'weekly', priority: 0.75 });
-      }
-    }
-    for (const s of (await tumSehirler()).filter((x) => x.yerSayisi >= EN_AZ_YER)) {
-      if (await yerVerisi(s.slug)) {
-        sehirPages.push({ url: `${baseUrl}/${s.slug}/gezilecek-yerler`, changeFrequency: 'weekly', priority: 0.75 });
-      }
-    }
   }
 
   return [...staticPages, ...docsPages, ...blogPages, ...sehirPages, ...categoryPages, ...businessPages];
