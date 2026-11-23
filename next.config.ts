@@ -9,6 +9,17 @@ const nextConfig: NextConfig = {
     // Mobil taraftaki React Native'e özel TS hatalarının web derlemesini bozmasını önlemek için
     ignoreBuildErrors: true,
   },
+  // Adresi değişen blog yazıları kalıcı olarak yeni adrese yönlenir. Eski adres Google'da kalmıştı, Google hâlâ
+  // istiyordu ve 404 alıyordu (23.11.2026).
+  async redirects() {
+    return [
+      {
+        source: '/blog/disarida-yeme-icme-deneyiminde-yeni-donem-menuland-akilli-sehir-rehberi-ve-isletme-ekosistemi',
+        destination: '/blog/menuland-akilli-sehir-rehberi-ve-isletme-ekosistemi',
+        permanent: true,
+      },
+    ];
+  },
   // Mobil cihazlarda CORS sorununu önlemek için API isteklerini proxy'le
   async rewrites() {
     return [
