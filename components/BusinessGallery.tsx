@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { puanMetni } from '@/lib/utils';
 import { Star } from 'lucide-react';
 
 interface BusinessGalleryProps {
@@ -30,9 +31,9 @@ export default function BusinessGallery({ images, name, rating }: BusinessGaller
           alt={name}
           className="h-full w-full object-cover transition-all duration-300"
         />
-        {rating && (
+        {puanMetni(rating) && (
           <div className="absolute top-4 right-4 rounded-lg bg-white/95 px-2.5 py-1 text-sm font-black text-zinc-950 flex items-center gap-1 shadow-sm">
-            <Star className="h-4 w-4 fill-[#FF4D00] text-[#FF4D00]" /> {rating}
+            <Star className="h-4 w-4 fill-[#FF4D00] text-[#FF4D00]" /> {puanMetni(rating)}
           </div>
         )}
       </div>

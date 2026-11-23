@@ -2,7 +2,7 @@ import { getBusinesses, getBusinessListingCategories } from '@/src/api/businessS
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Search, Star, MapPin, Utensils, Compass, BookOpen, ArrowRight } from 'lucide-react';
-import { getBusinessUrl, getCategoryUrl } from '../lib/utils';
+import { getBusinessUrl, getCategoryUrl, puanMetni } from '../lib/utils';
 import { blogPosts } from '@/src/data/blog-posts';
 import type { Metadata } from 'next';
 import { SITE_URL, APP_STORE_URL, GOOGLE_PLAY_URL, KURUMSAL_URL, jsonLd } from '@/lib/site';
@@ -51,8 +51,10 @@ export default async function Home() {
   const cityName = cookieStore.get('selectedCityName')?.value || null;
   const districtName = cookieStore.get('selectedDistrictName')?.value || null;
 
-  // Konum parametrelerini API'ye geç
-  const businessParams: any = { limit: 12 };
+  // Konum parametrelerini API'ye geç. page: 1 olmadan API limit'i yok sayıyor ve bütün işletmeleri bütün alanlarıyla
+  // döndürüyordu (23.11.2026'da 3.978 işletme, 7,6 MB, her ana sayfa açılışında). Sayfalı istek aynı ilk 12 işletmeyi
+  // aynı sırayla getirir.
+  const businessParams: any = { limit: 12, page: 1 };
   if (cityId) businessParams.city_id = cityId;
   if (districtId) businessParams.district_id = districtId;
 
@@ -187,9 +189,9 @@ export default async function Home() {
                       <Utensils className="h-10 w-10" />
                     </div>
                   )}
-                  {biz.rating && (
+                  {puanMetni(biz.rating) && (
                     <div className="absolute top-4 right-4 rounded-lg bg-white/90 px-2 py-1 text-xs font-bold text-zinc-900 flex items-center gap-1 shadow-sm">
-                      <Star className="h-3.5 w-3.5 fill-[#FF4D00] text-[#FF4D00]" /> {biz.rating}
+                      <Star className="h-3.5 w-3.5 fill-[#FF4D00] text-[#FF4D00]" /> {puanMetni(biz.rating)}
                     </div>
                   )}
                 </div>

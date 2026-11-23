@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import axios from 'axios';
 import Link from 'next/link';
+import { puanMetni } from '@/lib/utils';
 import Image from 'next/image';
 import { 
   User as UserIcon, 
@@ -384,10 +385,12 @@ export default async function UserPublicProfilePage({ params }: PageProps) {
                     <p className="text-xs text-zinc-500 truncate mt-0.5">
                       {fav.category_text || 'Restoran & Kafe'}
                     </p>
-                    <div className="flex items-center gap-1 text-amber-500 font-bold text-xs mt-1">
-                      <Star className="w-3.5 h-3.5 fill-amber-400" />
-                      <span>{fav.rating ? Number(fav.rating).toFixed(1) : '5.0'}</span>
-                    </div>
+                    {puanMetni(fav.rating) && (
+                      <div className="flex items-center gap-1 text-amber-500 font-bold text-xs mt-1">
+                        <Star className="w-3.5 h-3.5 fill-amber-400" />
+                        <span>{puanMetni(fav.rating)}</span>
+                      </div>
+                    )}
                   </div>
 
                   <ArrowRight className="w-4 h-4 text-zinc-300 group-hover:text-[#FF4D00] group-hover:translate-x-1 transition-all shrink-0" />

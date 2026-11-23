@@ -3,7 +3,7 @@ import type { BusinessResponse } from '@/src/api/businessService';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Star, MapPin, Compass, ArrowLeft, Utensils } from 'lucide-react';
-import { getBusinessUrl } from '../../lib/utils';
+import { getBusinessUrl, puanMetni } from '../../lib/utils';
 import type { Metadata } from 'next';
 
 // Sayfa başına 24 işletme (16.11.2026). Önce bütün işletmeler tek sayfada çiziliyordu; ülke geneline açılınca
@@ -114,9 +114,9 @@ export default async function AllBusinesses({ searchParams }: PageProps) {
                     <Utensils className="h-10 w-10" />
                   </div>
                 )}
-                {biz.rating && (
+                {puanMetni(biz.rating) && (
                   <div className="absolute top-4 right-4 rounded-lg bg-white/90 px-2 py-1 text-xs font-bold text-zinc-900 flex items-center gap-1 shadow-sm">
-                    <Star className="h-3.5 w-3.5 fill-[#FF4D00] text-[#FF4D00]" /> {biz.rating}
+                    <Star className="h-3.5 w-3.5 fill-[#FF4D00] text-[#FF4D00]" /> {puanMetni(biz.rating)}
                   </div>
                 )}
               </div>

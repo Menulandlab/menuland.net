@@ -52,3 +52,12 @@ export function getCategoryUrl(cat: { id: number; name: string }) {
   const nameSlug = slugify(cat.name || 'kategori');
   return `/kategori/${nameSlug}-${cat.id}`;
 }
+
+/**
+ * İşletme puanını rozette gösterilecek metne çevirir. Yorumu olmayan işletmede API "0.0" ya da boş döndürür; bu
+ * durumda rozet hiç çizilmez (önce "0.0" yazıyordu ve en kötü puan gibi görünüyordu). Puan uydurulmaz.
+ */
+export function puanMetni(puan: unknown): string | null {
+  const sayi = Number(puan);
+  return Number.isFinite(sayi) && sayi > 0 ? sayi.toFixed(1) : null;
+}

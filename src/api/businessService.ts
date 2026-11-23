@@ -41,14 +41,21 @@ export const getBusinesses = async (params: {
   search?: string;
   lat?: number;
   lon?: number;
+  /**
+   * API limit'i yalnızca page ile (ya da siralama ile) uygular; page olmadan limit yok sayılır ve bütün işletmeler
+   * gelir. Sayfalı yanıt { data, total } biçimindedir; burada data dizisi döndürülür.
+   */
   limit?: number;
+  page?: number;
   ids?: number[];
   /** 'liste': hafif yanıt (açıklama kısaltılmış, yasal metin ve görsel alanlarının çoğu gelmez). */
   alanlar?: 'liste';
 }): Promise<BusinessResponse[]> => {
   try {
     const response = await publicApiClient.get('/businesses', { params });
-    return Array.isArray(response.data) ? response.data : [];
+    const veri = response.data;
+    if (Array.isArray(veri)) return veri;
+    return Array.isArray(veri?.data) ? veri.data : [];
   } catch (error) {
     console.error('Error fetching businesses:', error);
     return [];

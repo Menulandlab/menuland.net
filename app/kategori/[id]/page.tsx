@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Star, MapPin, Compass, ArrowLeft, Utensils } from 'lucide-react';
-import { getBusinessUrl, extractIdFromSlug, getCategoryUrl } from '../../../lib/utils';
+import { getBusinessUrl, extractIdFromSlug, getCategoryUrl, puanMetni } from '../../../lib/utils';
 import { DEFAULT_OG_IMAGE } from '@/lib/site';
 import { kategorininSehirSayfalari } from '@/lib/sehirSayfalari';
 
@@ -154,9 +154,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                     <Utensils className="h-10 w-10" />
                   </div>
                 )}
-                {biz.rating && (
+                {puanMetni(biz.rating) && (
                   <div className="absolute top-4 right-4 rounded-lg bg-white/90 px-2 py-1 text-xs font-bold text-zinc-900 flex items-center gap-1 shadow-sm">
-                    <Star className="h-3.5 w-3.5 fill-[#FF4D00] text-[#FF4D00]" /> {biz.rating}
+                    <Star className="h-3.5 w-3.5 fill-[#FF4D00] text-[#FF4D00]" /> {puanMetni(biz.rating)}
                   </div>
                 )}
               </div>
