@@ -3,6 +3,7 @@ import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import { webPublicClient } from '../../../../lib/api';
 import { kisalt } from '@/lib/site';
+import { yerAdlari } from '@/lib/yerAdlari';
 import Link from 'next/link';
 import { Compass, MapPin, ArrowLeft, Phone, Globe, Map } from 'lucide-react';
 import BusinessGallery from '../../../../components/BusinessGallery';
@@ -39,7 +40,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params;
   const place = await getPlace(id);
   if (!place) return { title: 'Yer Bulunamadı', robots: { index: false, follow: true } };
-  const yer = [place.district_name, place.city_name].filter(Boolean).join(', ');
+  // Yer kayıtlarında il ve ilçe adı gelmeyebiliyor; o zaman numaralarından bulunur ("Teleferik" yerine
+  // "Teleferik · Altınordu, Ordu", 24.11.2026).
+  const adlar = place.city_name ? { il: '', ilce: '' } : await yerAdlari(place.city_id, place.district_id);
+  const yer = [place.district_name || adlar.ilce, place.city_name || adlar.il].filter(Boolean).join(', ');
   const aciklama = place.description ? kisalt(String(place.description), 158) : `${place.name}${yer ? ` (${yer})` : ''}: Menuland Keşfet.`;
   // Metni ya da fotoğrafı Kültür Portalı'ndan alınmış yerler, kullanım koşulları kontrol edilene kadar dizine girmez.
   const disKaynak = /kulturportali\.gov\.tr/i.test(`${place.source_url || ''} ${place.image_source_url || ''}`);

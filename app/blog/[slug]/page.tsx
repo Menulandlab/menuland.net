@@ -15,6 +15,39 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+/**
+ * Google'da çok gösterilip az tıklanan yazıların arama başlığı ve açıklaması (24.11.2026, Search Console:
+ * plajlar yazısı 6. sırada 764 gösterim, 1 tıklama). Sayfadaki başlık değişmez; yalnızca Google'da ve
+ * paylaşım kartında görünen metin kısalır ve aranan sözle başlar. Metinler yazının içeriğinden alındı.
+ */
+const ARAMA_METNI: Record<string, { baslik: string; aciklama?: string }> = {
+  'orduda-deniz-keyfi-bedava-ilce-ilce-ucretsiz-en-guzel-sahiller-ve-plajlar': {
+    baslik: 'Ordu Plajları: İlçe İlçe Ücretsiz Halk Plajları ve Sahiller',
+    aciklama:
+      "Ordu'da ücretsiz denize girilecek halk plajları ilçe ilçe: Kumbaşı, Mavi Dünya, Çaka ve diğerleri. Giriş ücreti ve yüzerken dikkat edilecekler.",
+  },
+  'ordu-yason-burnu-gezi-rehberi': {
+    baslik: 'Yason Burnu Nerede? Efsanesi, Kilisesi ve Gezi Rehberi',
+  },
+};
+
+/** Yazının anlattığı yerlerin şehir sayfaları; yazının altında bağlantı olarak durur. */
+const ILGILI_SAYFALAR: Record<string, Array<{ ad: string; yol: string }>> = {
+  'orduda-deniz-keyfi-bedava-ilce-ilce-ucretsiz-en-guzel-sahiller-ve-plajlar': [
+    { ad: 'Altınordu Mekanları', yol: '/ordu/altinordu' },
+    { ad: 'Gülyalı Mekanları', yol: '/ordu/gulyali' },
+    { ad: 'Perşembe Mekanları', yol: '/ordu/persembe' },
+    { ad: 'Fatsa Mekanları', yol: '/ordu/fatsa' },
+    { ad: 'Ünye Mekanları', yol: '/ordu/unye' },
+    { ad: "Ordu'da Gezilecek Yerler", yol: '/ordu/gezilecek-yerler' },
+  ],
+  'ordu-yason-burnu-gezi-rehberi': [
+    { ad: 'Perşembe Mekanları', yol: '/ordu/persembe' },
+    { ad: "Ordu'da Gezilecek Yerler", yol: '/ordu/gezilecek-yerler' },
+    { ad: 'Ordu Mekanları', yol: '/ordu' },
+  ],
+};
+
 export async function generateStaticParams() {
   const posts = await getBlogPosts();
   return posts.map((post) => ({
@@ -33,13 +66,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const arama = ARAMA_METNI[post.slug];
+  const baslik = arama?.baslik || post.title;
+  const aciklama = arama?.aciklama || post.excerpt;
   return {
-    title: post.title,
+    title: baslik,
     alternates: { canonical: `/blog/${post.slug}` },
-    description: post.excerpt,
+    description: aciklama,
     openGraph: {
-      title: post.title,
-      description: post.excerpt,
+      title: baslik,
+      description: aciklama,
       images: [post.image],
       type: 'article',
       publishedTime: post.date,
@@ -60,7 +96,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const yaziJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    headline: post.title,
+    headline: ARAMA_METNI[post.slug]?.baslik || post.title,
     description: post.excerpt || undefined,
     image: post.image ? [post.image] : undefined,
     datePublished: post.date || undefined,
@@ -138,6 +174,24 @@ export default async function BlogPostPage({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: formatBlogContent(post.content) }}
         />
       </article>
+
+      {ILGILI_SAYFALAR[post.slug] && (
+        <nav aria-label="Bu yazıyla ilgili sayfalar" className="flex flex-col gap-3 rounded-3xl border border-gray-100 bg-white p-6">
+          <h2 className="text-base font-bold text-zinc-900">Bu yazıyla ilgili sayfalar</h2>
+          <ul className="flex flex-wrap gap-2">
+            {ILGILI_SAYFALAR[post.slug].map((s) => (
+              <li key={s.yol}>
+                <Link
+                  href={s.yol}
+                  className="inline-flex rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm text-zinc-700 transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+                >
+                  {s.ad}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
 
       {/* Yazı Sonu Çağrı Kartı (CTA Card - İşletmeler veya Kullanıcılar İçin) */}
       <BlogCtaCard type={post.cta_card} />
