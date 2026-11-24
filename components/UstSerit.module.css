@@ -1,0 +1,284 @@
+/*
+ * Üst şerit (components/UstSerit.tsx). Bütün hareketler yalnızca transform ve opacity kullanır;
+ * şerit ilk HTML'de 40 px yüksekliğiyle geldiği için sayfa açılırken içerik kaymaz.
+ * Renkler sitenin mevcut tonlarıdır: #FFF4ED, #FDCEAC, #F6D3BD, #FF4D00, #D63F00, #B83600, #1C1917.
+ */
+
+.serit {
+  position: relative;
+  isolation: isolate;
+  flex-shrink: 0;
+  width: 100%;
+  height: 40px;
+  overflow: hidden;
+  background: linear-gradient(90deg, #fff4ed 0%, #fdceac 50%, #fff4ed 100%);
+  border-bottom: 1px solid #f6d3bd;
+  color: #1c1917;
+}
+
+/* Işık süzmesi: 7 saniyelik döngünün son 1,2 saniyesinde soldan sağa geçer. */
+.serit::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  width: 140px;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: translateX(-160px);
+  animation: suzulme 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes suzulme {
+  0%,
+  82.86% {
+    transform: translateX(-160px);
+  }
+  100% {
+    transform: translateX(calc(100vw + 20px));
+  }
+}
+
+/* Başlıkla aynı genişlik ve kenar boşlukları (max-w-7xl, px-4 sm:px-6 lg:px-8). */
+.ic {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 80rem;
+  height: 100%;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(12px, env(safe-area-inset-right));
+}
+
+@media (min-width: 640px) {
+  .ic {
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+  }
+}
+
+@media (min-width: 1024px) {
+  .ic {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+.sahne {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.mesaj {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 4px;
+  transition:
+    transform 500ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 500ms ease;
+}
+
+@media (min-width: 640px) {
+  .mesaj {
+    justify-content: center;
+    gap: 10px;
+    padding-left: 32px;
+  }
+}
+
+/* Sıradaki mesajlar aşağıda bekler, etkin mesaj ortadadır, giden mesaj yukarı çıkıp kaybolur. */
+.bekleyen {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+.aktif {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.giden {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.ikon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: #ff4d00;
+}
+
+.aktif .ikon {
+  animation: kipirda 0.9s ease-out 0.35s 1 both;
+}
+
+@keyframes kipirda {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(-14deg);
+  }
+  40% {
+    transform: rotate(11deg);
+  }
+  60% {
+    transform: rotate(-6deg);
+  }
+  80% {
+    transform: rotate(3deg);
+  }
+}
+
+.metin {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.uzun {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .ikon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .metin {
+    flex: 0 1 auto;
+    font-size: 14px;
+  }
+
+  .uzun {
+    display: inline;
+  }
+
+  .kisa {
+    display: none;
+  }
+}
+
+.dugme {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  background: #d63f00;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.dugme:hover {
+  background: #b83600;
+}
+
+.dugme:focus-visible,
+.durdur:focus-visible {
+  outline: 2px solid #1c1917;
+  outline-offset: 1px;
+}
+
+.ok {
+  width: 12px;
+  height: 12px;
+}
+
+.aktif .ok {
+  animation: ilerle 1.6s ease-in-out infinite;
+}
+
+@keyframes ilerle {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+}
+
+/* Erişilebilirlik: hareketli içeriği durdurma düğmesi (WCAG 2.2.2). */
+.durdur {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: #7a3a1d;
+  cursor: pointer;
+}
+
+.durdur:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.durdur svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Kullanıcı durdurunca ışık ve küçük hareketler de durur. */
+.durdu::after,
+.durdu .ikon,
+.durdu .ok {
+  animation: none;
+}
+
+/* Cihazda "hareketi azalt" açıksa hiçbir şey hareket etmez; ilk mesaj sabit kalır. */
+@media (prefers-reduced-motion: reduce) {
+  .serit::after {
+    display: none;
+  }
+
+  .mesaj {
+    transition: none;
+  }
+
+  .aktif .ikon,
+  .aktif .ok {
+    animation: none;
+  }
+
+  .durdur {
+    display: none;
+  }
+}
+
+@media print {
+  .serit {
+    display: none;
+  }
+}
