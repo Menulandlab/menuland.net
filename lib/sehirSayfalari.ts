@@ -46,6 +46,10 @@ export interface SehirIsletmesi {
   rezervasyon: boolean;
   gelAl: boolean;
   onecikan: boolean;
+  /** Menüsü Menuland'de (API'deki menulu alanı) */
+  menulu: boolean;
+  enlem: number | null;
+  boylam: number | null;
 }
 
 export interface SehirKategorisi {
@@ -179,12 +183,17 @@ function sehirVerisiniKur(sehir: Sehir, ilceHam: unknown, kategoriHam: unknown, 
       rezervasyon: evet(b.accepts_reservations),
       gelAl: evet(b.has_takeaway),
       onecikan: evet(b.is_featured),
+      menulu: evet(b.menulu),
+      enlem: sayiVeyaNull(b.latitude),
+      boylam: sayiVeyaNull(b.longitude),
     }));
 
-  // Sıra: öne çıkanlar, sonra görseli olanlar, sonra ada göre.
+  // Sıra: öne çıkanlar, sonra menüsü Menuland'de olanlar, sonra görseli olanlar, sonra ada göre (24.11.2026).
+  // Uygulamadaki görüntülenme sayıları kullanılmadı: sitenin kodu herkese açık, o sayılar iç veri.
   isletmeler.sort(
     (a, b) =>
       Number(b.onecikan) - Number(a.onecikan) ||
+      Number(b.menulu) - Number(a.menulu) ||
       Number(Boolean(b.gorsel)) - Number(Boolean(a.gorsel)) ||
       a.ad.localeCompare(b.ad, 'tr')
   );
@@ -240,7 +249,7 @@ export const sehirVerisi = unstable_cache(
     ]);
     return sehirVerisiniKur(sehir, ilceHam, kategoriHam, isletmeHam);
   },
-  ['sehir-sayfalari-veri-v2'],
+  ['sehir-sayfalari-veri-v3'],
   { revalidate: YENILEME_SANIYE }
 );
 
@@ -366,17 +375,38 @@ export async function enYakinAcikSehir(sehir: Sehir): Promise<{ sehir: Sehir; km
   return enIyi;
 }
 
-/** Bir işletmenin ait olduğu şehir, ilçe ve kategori sayfaları (işletme sayfasındaki bağlantılar için). */
+/** İki nokta arasındaki kuş uçuşu mesafe (km). */
+function noktaMesafesiKm(a1: number, b1: number, a2: number, b2: number): number {
+  const rad = (x: number) => (x * Math.PI) / 180;
+  const h = Math.sin(rad(a2 - a1) / 2) ** 2 + Math.cos(rad(a1)) * Math.cos(rad(a2)) * Math.sin(rad(b2 - b1) / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
+
+export interface BenzerIsletme {
+  id: number;
+  ad: string;
+  slug: string | null;
+  ilce: string;
+  km: number | null;
+  menulu: boolean;
+}
+
+/** Bir işletmenin ait olduğu şehir, ilçe ve kategori sayfaları ve aynı ildeki benzer işletmeler (işletme sayfası için). */
 export async function isletmeninSayfalari(isletme: {
+  id?: number | string | null;
   city_id?: number | string | null;
   district_id?: number | string | null;
   categories?: Array<{ id: number | string }>;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
 }): Promise<{
   sehir: { ad: string; yol: string } | null;
   ilce: { ad: string; yol: string } | null;
   kategoriler: Array<{ ad: string; yol: string; baslik: string }>;
+  /** Aynı ilde, en az bir kategorisi ortak işletmeler; konum varsa en yakından (24.11.2026). */
+  benzerler: BenzerIsletme[];
 }> {
-  const bos = { sehir: null, ilce: null, kategoriler: [] };
+  const bos = { sehir: null, ilce: null, kategoriler: [], benzerler: [] };
   if (!isletme.city_id) return bos;
   try {
     const sehir = (await acikSehirler()).find((s) => s.id === Number(isletme.city_id));
@@ -385,12 +415,37 @@ export async function isletmeninSayfalari(isletme: {
     if (!veri) return bos;
     const ilce = veri.ilceler.find((d) => d.id === Number(isletme.district_id));
     const idler = new Set((isletme.categories || []).map((c) => Number(c.id)));
+    const enlem = Number(isletme.latitude);
+    const boylam = Number(isletme.longitude);
+    const konum = Number.isFinite(enlem) && Number.isFinite(boylam) && enlem !== 0 && boylam !== 0;
+    const benimId = Number(isletme.id);
+    const benzerler: BenzerIsletme[] = veri.isletmeler
+      .filter((i) => i.id !== benimId && i.kategoriIdleri.some((k) => idler.has(k)))
+      .map((i) => ({
+        id: i.id,
+        ad: i.ad,
+        slug: i.slug,
+        ilce: i.ilceId ? veri.ilceAdlari[i.ilceId] || '' : '',
+        km:
+          konum && i.enlem !== null && i.boylam !== null && i.enlem !== 0 && i.boylam !== 0
+            ? noktaMesafesiKm(enlem, boylam, i.enlem, i.boylam)
+            : null,
+        menulu: i.menulu,
+      }))
+      .sort(
+        (a, b) =>
+          (a.km ?? Number.POSITIVE_INFINITY) - (b.km ?? Number.POSITIVE_INFINITY) ||
+          Number(b.menulu) - Number(a.menulu) ||
+          a.ad.localeCompare(b.ad, 'tr')
+      )
+      .slice(0, 6);
     return {
       sehir: { ad: sehir.ad, yol: `/${sehir.slug}` },
       ilce: ilce ? { ad: ilce.ad, yol: `/${sehir.slug}/${ilce.slug}` } : null,
       kategoriler: veri.kategoriler
         .filter((k) => idler.has(k.id))
         .map((k) => ({ ad: k.ad, yol: `/${sehir.slug}/${k.slug}`, baslik: kategoriBasligi(sehir.ad, k.ad) })),
+      benzerler,
     };
   } catch {
     return bos;

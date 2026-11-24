@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { cache } from 'react';
+import type React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MapPin, Utensils } from 'lucide-react';
@@ -13,9 +14,9 @@ import {
   type SehirKategorisi,
   type SehirIsletmesi,
 } from '@/lib/sehirSayfalari';
-import { SITE_URL, DEFAULT_OG_IMAGE, jsonLd } from '@/lib/site';
+import { SITE_URL, DEFAULT_OG_IMAGE, jsonLd, kisalt } from '@/lib/site';
 import { getBusinessUrl } from '@/lib/utils';
-import { GezintiIzi, IsletmeIzgarasi, BaglantiCipleri, EkosistemBolumu } from '@/components/SehirSayfasi';
+import { GezintiIzi, IsletmeIzgarasi, BaglantiCipleri, EkosistemBolumu, SikSorulanlar, IsletmeAdlari } from '@/components/SehirSayfasi';
 
 /**
  * Şehir × kategori (örneğin /ordu/kahvalti) ya da ilçe (örneğin /ordu/altinordu) sayfasının içeriği ve başlıkları.
@@ -78,11 +79,16 @@ export async function altSayfaMetadata(sehir: string, alt: string, no: number): 
         ? `${s.ilce.ad} Mekanları`
         : `${s.ilce.ad} Mekanları · ${sehirAdi}`
       : sayfaBasligi(s);
-  const baslik = no > 1 ? `${anaBaslik} · Sayfa ${no}` : anaBaslik;
-  const anaAciklama =
+  // Gerçek sayı ve yıl başlıkta (24.11.2026, Search Console: bu sayfalar 9,5. sırada, tıklanma %0,69).
+  const sayili = `${anaBaslik}: ${n} Mekân (${new Date().getFullYear()})`;
+  const baslik = no > 1 ? `${anaBaslik} · Sayfa ${no}` : sayili;
+  // Google açıklamayı yaklaşık 158 karakterde keser; sayı ve ilk adlar önde (24.11.2026).
+  const anaAciklama = kisalt(
     s.tur === 'ilce'
-      ? `${s.ilce.ad}${bulunmaEki(s.ilce.ad)} Menuland'de listelenen ${n} mekân: ${adlarIleOzet(s.isletmeler)}. Adresler ve varsa güncel menüler mekân sayfalarında.`
-      : `${sehirAdi}${bulunmaEki(sehirAdi)} “${s.kategori.ad}” kategorisinde Menuland'de listelenen ${n} mekân: ${adlarIleOzet(s.isletmeler)}. Adresler ve varsa güncel menüler mekân sayfalarında.`;
+      ? `${s.ilce.ad}${bulunmaEki(s.ilce.ad)} ${n} mekân: ${adlarIleOzet(s.isletmeler)}. Varsa menü, adres ve yol tarifi Menuland'de.`
+      : `${sehirAdi}${bulunmaEki(sehirAdi)} “${s.kategori.ad}” kategorisinde ${n} mekân: ${adlarIleOzet(s.isletmeler)}. Varsa menü, adres ve yol tarifi Menuland'de.`,
+    158
+  );
   const aciklama = no > 1 ? `${anaAciklama} Sayfa ${no} / ${sayfaSayisi(s)}.` : anaAciklama;
   const yol = sayfaYolu(`/${s.veri.sehir.slug}/${alt}`, no);
   return {
@@ -134,7 +140,83 @@ export async function AltSayfa({ sehir, alt, no }: { sehir: string; alt: string;
       dagilim.length > 0 ? ` İlçelere göre: ${listeHalinde(dagilim)}.` : ''
     }`;
   }
-  const etiketVar = gosterilen.some((i) => i.rezervasyon || i.gelAl);
+  const etiketVar = gosterilen.some((i) => i.menulu || i.rezervasyon || i.gelAl);
+
+  // Sayfanın verisinden sorular ve cevaplar (24.11.2026); verisi olmayan soru gösterilmez.
+  const menulular = isletmeler.filter((i) => i.menulu);
+  const rezervasyonlular = isletmeler.filter((i) => i.rezervasyon);
+  const gelAllilar = isletmeler.filter((i) => i.gelAl);
+  const kimler = s.tur === 'ilce' ? `${s.ilce.ad} mekânları` : baslik;
+  const sorular: Array<{ soru: string; cevap: React.ReactNode }> = [];
+  if (s.tur === 'kategori') {
+    const ilceSayilari = new Map<number, number>();
+    for (const i of isletmeler) if (i.ilceId) ilceSayilari.set(i.ilceId, (ilceSayilari.get(i.ilceId) || 0) + 1);
+    const ilceler = [...ilceSayilari.entries()]
+      .filter(([d]) => veri.ilceAdlari[d])
+      .sort((a, b) => b[1] - a[1] || veri.ilceAdlari[a[0]].localeCompare(veri.ilceAdlari[b[0]], 'tr'))
+      .slice(0, 6);
+    if (ilceler.length > 1) {
+      sorular.push({
+        soru: `${baslik} en çok hangi ilçelerde?`,
+        cevap: (
+          <>
+            {ilceler.map(([d, n], sira) => {
+              const sayfa = veri.ilceler.find((x) => x.id === d);
+              const ad = `${veri.ilceAdlari[d]} (${n})`;
+              return (
+                <span key={d}>
+                  {sira > 0 && (sira === ilceler.length - 1 ? ' ve ' : ', ')}
+                  {sayfa ? (
+                    <Link href={`${sehirYolu}/${sayfa.slug}`} className="font-semibold text-[#D63F00] hover:underline">
+                      {ad}
+                    </Link>
+                  ) : (
+                    ad
+                  )}
+                </span>
+              );
+            })}
+            .
+          </>
+        ),
+      });
+    }
+  } else {
+    const sayilar = new Map<number, number>();
+    for (const i of isletmeler) for (const k of new Set(i.kategoriIdleri)) sayilar.set(k, (sayilar.get(k) || 0) + 1);
+    const turler = veri.kategoriler
+      .filter((k) => (sayilar.get(k.id) || 0) > 0)
+      .sort((a, b) => (sayilar.get(b.id) || 0) - (sayilar.get(a.id) || 0) || a.ad.localeCompare(b.ad, 'tr'))
+      .slice(0, 6);
+    if (turler.length > 1) {
+      sorular.push({
+        soru: `${s.ilce.ad}${bulunmaEki(s.ilce.ad)} en çok hangi tür mekânlar var?`,
+        cevap: (
+          <>
+            {turler.map((k, sira) => (
+              <span key={k.id}>
+                {sira > 0 && (sira === turler.length - 1 ? ' ve ' : ', ')}
+                {`${k.ad} (${sayilar.get(k.id)})`}
+              </span>
+            ))}
+            {`. ${sehirAdi} genelindeki kategori sayfaları aşağıda.`}
+          </>
+        ),
+      });
+    }
+  }
+  if (menulular.length > 0) {
+    sorular.push({ soru: `Menüsü Menuland'de olan ${kimler} hangileri?`, cevap: <IsletmeAdlari isletmeler={menulular} /> });
+  }
+  if (rezervasyonlular.length > 0) {
+    sorular.push({
+      soru: `Menuland'den rezervasyon yapılabilen ${kimler} hangileri?`,
+      cevap: <IsletmeAdlari isletmeler={rezervasyonlular} />,
+    });
+  }
+  if (gelAllilar.length > 0) {
+    sorular.push({ soru: `Menuland'den Gel-Al siparişi verilebilen ${kimler} hangileri?`, cevap: <IsletmeAdlari isletmeler={gelAllilar} /> });
+  }
 
   const sayfaJsonLd = {
     '@context': 'https://schema.org',
@@ -187,8 +269,8 @@ export async function AltSayfa({ sehir, alt, no }: { sehir: string; alt: string;
         </h1>
         <p className="max-w-3xl text-sm leading-relaxed text-zinc-600">{giris}</p>
         <p className="max-w-3xl text-sm leading-relaxed text-zinc-600">
-          {"Mekânın adına basarak adresini ve varsa Menuland'deki güncel menüsünü görebilirsiniz."}
-          {etiketVar && ' Kartlardaki “Rezervasyon” ve “Gel-Al” etiketleri, mekânın bu hizmeti Menuland üzerinden sunduğunu gösterir.'}
+          {"Liste önce öne çıkan mekânlarla, sonra menüsü Menuland'de olanlarla başlar. Mekânın adına basarak adresini ve varsa güncel menüsünü görebilirsiniz."}
+          {etiketVar && ' Kartlardaki “Menü”, “Rezervasyon” ve “Gel-Al” etiketleri, mekânın menüsünün ya da bu hizmetin Menuland üzerinden sunulduğunu gösterir.'}
         </p>
       </header>
 
@@ -209,6 +291,8 @@ export async function AltSayfa({ sehir, alt, no }: { sehir: string; alt: string;
           )}
         </nav>
       )}
+
+      {no === 1 && <SikSorulanlar baslik="Kısaca" sorular={sorular} />}
 
       {s.tur === 'kategori' ? (
         <>

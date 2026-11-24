@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { MapPin, Utensils, CalendarCheck, ShoppingBag, ChevronRight, Smartphone, Store, Clock, Landmark } from 'lucide-react';
 import { getBusinessUrl } from '@/lib/utils';
 import { APP_STORE_URL, GOOGLE_PLAY_URL, KURUMSAL_URL, whatsappBaglantisi } from '@/lib/site';
@@ -75,8 +76,13 @@ export function IsletmeIzgarasi({
                 )}
                 {kategoriler.length > 0 && <p className="line-clamp-1 text-xs text-zinc-500">{kategoriler.join(' · ')}</p>}
                 {i.aciklama && <p className="line-clamp-2 text-sm text-zinc-600">{i.aciklama}</p>}
-                {(i.rezervasyon || i.gelAl) && (
+                {(i.menulu || i.rezervasyon || i.gelAl) && (
                   <div className="mt-auto flex flex-wrap gap-1.5 pt-1">
+                    {i.menulu && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-semibold text-[#C2410C]">
+                        <Utensils className="h-3 w-3" aria-hidden="true" /> Menü
+                      </span>
+                    )}
                     {i.rezervasyon && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-semibold text-[#C2410C]">
                         <CalendarCheck className="h-3 w-3" aria-hidden="true" /> Rezervasyon
@@ -99,6 +105,47 @@ export function IsletmeIzgarasi({
 }
 
 /** Başka şehir sayfalarına bağlantı çipleri. */
+/**
+ * Sayfanın verisinden kurulan kısa sorular ve cevaplar (24.11.2026). Yalnızca verisi olan soru gösterilir;
+ * cevaplardaki mekân adları mekân sayfalarına bağlanır.
+ */
+export function SikSorulanlar({ baslik, sorular }: { baslik: string; sorular: Array<{ soru: string; cevap: ReactNode }> }) {
+  if (sorular.length === 0) return null;
+  return (
+    <section className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white p-6">
+      <h2 className="text-lg font-bold text-zinc-900">{baslik}</h2>
+      <div className="flex flex-col divide-y divide-gray-100">
+        {sorular.map((s) => (
+          <div key={s.soru} className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0">
+            <h3 className="text-sm font-bold text-zinc-900">{s.soru}</h3>
+            <div className="text-sm leading-relaxed text-zinc-600">{s.cevap}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** Mekân adlarını mekân sayfalarına bağlanmış, virgülle ayrılmış liste olarak yazar; fazlası "ve N mekân daha" olur. */
+export function IsletmeAdlari({ isletmeler, enCok = 8 }: { isletmeler: Array<{ id: number; ad: string; slug: string | null }>; enCok?: number }) {
+  const gosterilen = isletmeler.slice(0, enCok);
+  const kalan = isletmeler.length - gosterilen.length;
+  return (
+    <>
+      {gosterilen.map((i, sira) => (
+        <span key={i.id}>
+          {sira > 0 && (sira === gosterilen.length - 1 && kalan === 0 ? ' ve ' : ', ')}
+          <Link href={getBusinessUrl({ id: i.id, slug: i.slug, name: i.ad })} className="font-semibold text-[#D63F00] hover:underline">
+            {i.ad}
+          </Link>
+        </span>
+      ))}
+      {kalan > 0 && ` ve ${kalan} mekân daha`}
+      .
+    </>
+  );
+}
+
 export function BaglantiCipleri({ baslik, baglantilar }: { baslik: string; baglantilar: Array<{ ad: string; yol: string; sayi?: number }> }) {
   if (baglantilar.length === 0) return null;
   return (

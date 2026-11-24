@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   const veri = await sehirVerisi(slug).catch(() => null);
   if (!veri) return {};
-  const baslik = `${ad} Mekanları: İlçeler ve Kategoriler`;
+  const baslik = `${ad} Mekanları: ${veri.isletmeler.length} Mekân, İlçeler ve Kategoriler (${new Date().getFullYear()})`;
   const aciklama = `${ad}${bulunmaEki(ad)} Menuland'de listelenen ${veri.isletmeler.length} mekânı ilçelere ve kategorilere göre keşfedin. Mekân sayfalarında adres ve varsa güncel menü yer alır.`;
   return {
     title: baslik,
@@ -129,7 +129,7 @@ export default async function SehirSayfasi({ params }: PageProps) {
         </h1>
         <p className="max-w-3xl text-sm leading-relaxed text-zinc-600">{giris}</p>
         <p className="max-w-3xl text-sm leading-relaxed text-zinc-600">
-          {"Aşağıda ilçe ve kategori sayfalarını bulabilirsiniz. Her sayfa Menuland'deki güncel listeden oluşturulur ve saatte bir yenilenir."}
+          {"Aşağıda ilçe ve kategori sayfalarını bulabilirsiniz. Her sayfa Menuland'deki güncel listeden oluşturulur ve saatte bir yenilenir. Listeler önce öne çıkan mekânlarla, sonra menüsü Menuland'de olanlarla başlar."}
         </p>
       </header>
 
