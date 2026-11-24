@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useCerezTercihi } from '../lib/cerezTercihi';
 import { ADSENSE_YAYINCI, REKLAM_BIRIMLERI, adsenseBetiginiYukle, type ReklamYeri } from '../lib/reklam';
@@ -14,6 +14,13 @@ declare global {
 interface ReklamAlaniProps {
   yer: ReklamYeri;
   className?: string;
+  /**
+   * Yalnızca geniş ekranda (1024 px ve üstü) göster (24.11.2026). Kutu ziyaretçinin onayı okunduktan sonra
+   * eklendiği için ilk ekrandaki bir yere eklenirse altındaki içeriği aşağı iter; Google bunu sayfa kayması (CLS)
+   * sayar. Telefonda ilk ekrana düşen yerler (işletme sayfasının yan sütunu, blog listesinin başı) bu yüzden
+   * telefonda reklamsızdır.
+   */
+  yalnizGenisEkran?: boolean;
 }
 
 /**
@@ -21,11 +28,20 @@ interface ReklamAlaniProps {
  * AdSense'te bir reklam birimi numarası varsa çizilir; aksi hâlde sayfada hiç yer kaplamaz.
  * Sayfa değişince (aynı türden başka bir işletmeye geçince de) kutu yeniden kurulur ve yeni reklam istenir.
  */
-export default function ReklamAlani({ yer, className = '' }: ReklamAlaniProps) {
+export default function ReklamAlani({ yer, className = '', yalnizGenisEkran = false }: ReklamAlaniProps) {
   const { tercih } = useCerezTercihi();
   const yol = usePathname();
   const birim = REKLAM_BIRIMLERI[yer];
-  const gosterilir = tercih?.reklam === true && Boolean(birim);
+  const [genis, setGenis] = useState(false);
+  useEffect(() => {
+    if (!yalnizGenisEkran) return;
+    const sorgu = window.matchMedia('(min-width: 1024px)');
+    const guncelle = () => setGenis(sorgu.matches);
+    guncelle();
+    sorgu.addEventListener('change', guncelle);
+    return () => sorgu.removeEventListener('change', guncelle);
+  }, [yalnizGenisEkran]);
+  const gosterilir = tercih?.reklam === true && Boolean(birim) && (!yalnizGenisEkran || genis);
   const kutu = useRef<HTMLModElement | null>(null);
 
   useEffect(() => {

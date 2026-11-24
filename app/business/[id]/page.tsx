@@ -12,9 +12,10 @@ import { Star, MapPin, Phone, Globe, Calendar, Tag, ShieldCheck, Heart, Share2, 
 import { disMenu, disMenuSayfasi } from '@/lib/disMenu';
 import { extractIdFromSlug, getBusinessUrl } from '../../../lib/utils';
 import { SITE_URL, DEFAULT_OG_IMAGE, KURUMSAL_URL, jsonLd, kisalt, whatsappBaglantisi } from '@/lib/site';
-import { GezintiIzi } from '@/components/SehirSayfasi';
+import { GezintiIzi, SikSorulanlar } from '@/components/SehirSayfasi';
 import ReklamAlani from '@/components/ReklamAlani';
 import { isletmeninSayfalari } from '@/lib/sehirSayfalari';
+import { sayfadaOlanlar, isletmeBasligi, isletmeAciklamasi, calismaSaatleri, saatOzeti, mesafeMetni } from '@/lib/isletmeBilgisi';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -89,22 +90,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     menuVarMi(business),
   ]);
   const yer = [ilce, il].filter(Boolean).join(', ');
-  // Menüsü olmayan işletmede başlık menü vaat etmez; sayfa yine dizinde kalır.
-  const title = menuVar
-    ? `${business.name} Menü ve Fiyatları${yer ? ` · ${yer}` : ''}`
-    : `${business.name}${yer ? ` · ${yer}` : ''}`;
+  // Başlık ve açıklama yalnızca sayfada gerçekten olanı söyler (24.11.2026): menüsü olmayan işletmede menü,
+  // adresi olmayan işletmede adres vaat edilmez. Sayfa yine dizinde kalır.
+  const olanlar = sayfadaOlanlar(business, menuVar);
+  const title = isletmeBasligi(business.name, yer, olanlar);
   const kategoriler = (Array.isArray(business.categories) ? business.categories : [])
     .map((k: any) => k?.name)
     .filter(Boolean)
     .slice(0, 3)
     .join(', ');
-  const description = kisalt(
-    `${business.name}${yer ? ` (${yer})` : ''}${kategoriler ? `: ${kategoriler}` : ''}. ` +
-      (menuVar
-        ? "Güncel dijital menü ve fiyatlar, adres, telefon ve fotoğraflar Menuland'de."
-        : "Adres, telefon ve fotoğraflar Menuland'de."),
-    158
-  );
+  const description = kisalt(isletmeAciklamasi(business.name, yer, kategoriler, olanlar), 158);
   const url = getBusinessUrl(business);
   const gorsel = business.image_url_1 || business.image_url_medium || business.image_url;
   return {
@@ -217,6 +212,12 @@ export default async function BusinessDetail({ params }: PageProps) {
   const boylam = Number(business.longitude);
   const konumVar = Number.isFinite(enlem) && Number.isFinite(boylam) && enlem !== 0 && boylam !== 0;
   const fiyatAraligi = Number(business.price_range);
+  // Çalışma saatleri (kayıtta varsa) ve aranabilir telefon bağlantısı (24.11.2026)
+  const saatler = calismaSaatleri(business.working_hours);
+  const telRakam = String(business.phone || '').replace(/\D/g, '');
+  const telBaglanti = telRakam
+    ? `tel:${telRakam.startsWith('0') ? `+90${telRakam.slice(1)}` : telRakam.length === 10 ? `+90${telRakam}` : telRakam}`
+    : null;
   const isletmeJsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -240,6 +241,16 @@ export default async function BusinessDetail({ params }: PageProps) {
         geo: konumVar ? { '@type': 'GeoCoordinates', latitude: enlem, longitude: boylam } : undefined,
         priceRange: fiyatAraligi >= 1 && fiyatAraligi <= 4 ? '₺'.repeat(fiyatAraligi) : undefined,
         hasMenu: menuVar ? `${sayfaUrl}#menu` : undefined,
+        openingHoursSpecification: saatler.some((s) => s.acilis)
+          ? saatler
+              .filter((s) => s.acilis && s.kapanis)
+              .map((s) => ({
+                '@type': 'OpeningHoursSpecification',
+                dayOfWeek: `https://schema.org/${s.schemaGun}`,
+                opens: s.acilis,
+                closes: s.kapanis,
+              }))
+          : undefined,
         sameAs: business.instagram_url ? [business.instagram_url] : undefined,
       },
       {
@@ -303,11 +314,11 @@ export default async function BusinessDetail({ params }: PageProps) {
                 <span className="line-clamp-2">{adres}</span>
               </div>
             )}
-            {business.phone && (
-              <div className="flex items-center gap-2 text-xs text-zinc-600">
+            {business.phone && telBaglanti && (
+              <a href={telBaglanti} className="flex items-center gap-2 text-xs text-zinc-600 hover:text-[#FF4D00]">
                 <Phone className="h-4 w-4 text-zinc-400 flex-shrink-0" />
                 <span>{business.phone}</span>
-              </div>
+              </a>
             )}
             {business.instagram_url && (
               <a
@@ -332,6 +343,20 @@ export default async function BusinessDetail({ params }: PageProps) {
               </a>
             )}
           </div>
+
+          {saatler.length > 0 && (
+            <div className="border-t border-gray-100 pt-4">
+              <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-zinc-500">Çalışma saatleri</h2>
+              <ul className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-zinc-600 sm:grid-cols-3">
+                {saatler.map((s) => (
+                  <li key={s.gun} className="flex justify-between gap-3">
+                    <span>{s.gun}</span>
+                    <span className="font-medium text-zinc-800">{s.metin}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </section>
 
@@ -349,7 +374,7 @@ export default async function BusinessDetail({ params }: PageProps) {
             />
           )}
 
-          {reklamUygun && <ReklamAlani yer="isletme-yan" />}
+          {reklamUygun && <ReklamAlani yer="isletme-yan" yalnizGenisEkran />}
         </div>
 
         {/* Menu & Details (Left col on desktop, second on mobile) */}
@@ -551,8 +576,9 @@ export default async function BusinessDetail({ params }: PageProps) {
 
             {/* App Promotion CTA for commenting */}
             <div className="mt-4 rounded-2xl bg-zinc-50 border border-gray-100 p-4 text-center">
-              <p className="text-xs text-zinc-650 leading-relaxed">
-                Bu mekana yorum yazmak, favorilerinize eklemek ve sadakat puanları biriktirmek için **Menuland mobil uygulamasını** indirebilirsiniz.
+              <p className="text-xs text-zinc-600 leading-relaxed">
+                Bu mekâna yorum yazmak, favorilerinize eklemek ve sadakat puanları biriktirmek için{' '}
+                <strong className="font-semibold text-zinc-800">Menuland mobil uygulamasını</strong> indirebilirsiniz.
               </p>
             </div>
           </section>
@@ -560,6 +586,58 @@ export default async function BusinessDetail({ params }: PageProps) {
         </div>
 
       </div>
+
+      {/* Kısaca: kayıttaki bilgilerden kurulan sorular ve cevaplar (24.11.2026). Verisi olmayan soru gösterilmez. */}
+      <SikSorulanlar
+        baslik="Kısaca"
+        sorular={[
+          {
+            soru: `${business.name} nerede?`,
+            cevap: (
+              <>
+                {`Konum: ${[ilce, il].filter(Boolean).join(', ') || 'kayıtta yok'}.`}
+                {adres ? ` Adres: ${adres}.` : ''}
+                {konumVar ? ' Yol tarifi için sayfanın üstündeki “Haritada Gör” bağlantısına dokunun.' : ''}
+              </>
+            ),
+          },
+          ...(business.phone && telBaglanti
+            ? [
+                {
+                  soru: `${business.name} telefon numarası nedir?`,
+                  cevap: (
+                    <>
+                      {'Telefon: '}
+                      <a href={telBaglanti} className="font-semibold text-[#D63F00] hover:underline">
+                        {business.phone}
+                      </a>
+                      .
+                    </>
+                  ),
+                },
+              ]
+            : []),
+          {
+            soru: `${business.name} menüsü var mı?`,
+            cevap: menuVar
+              ? 'Evet. Güncel menüsü ve fiyatları bu sayfada, “Dijital QR Menü” bölümünde.'
+              : disMenuBilgisi
+                ? `Menüsü ${disMenuBilgisi.alanAdi} adresinde yayınlanıyor; bu sayfadaki “Menüyü görüntüle” düğmesiyle açabilirsiniz.`
+                : "Menüsü henüz Menuland'e eklenmedi.",
+          },
+          ...(saatler.length > 0
+            ? [{ soru: `${business.name} çalışma saatleri nedir?`, cevap: `${saatOzeti(saatler)}.` }]
+            : []),
+          ...(business.accepts_reservations === 1 || business.accepts_reservations === '1' || business.accepts_reservations === true
+            ? [
+                {
+                  soru: `${business.name} rezervasyon alıyor mu?`,
+                  cevap: 'Evet. Bu sayfadan ya da Menuland uygulamasından rezervasyon talebi gönderebilirsiniz.',
+                },
+              ]
+            : []),
+        ]}
+      />
 
       {/* Bu mekânın yer aldığı ilçe, kategori ve şehir sayfaları */}
       {bulunduguSayfalar.sehir && (
@@ -577,6 +655,32 @@ export default async function BusinessDetail({ params }: PageProps) {
                   className="inline-flex rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm text-zinc-700 transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
                 >
                   {b.ad}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+
+      {/* Aynı ildeki benzer mekânlar (en az bir kategorisi ortak); konum varsa en yakından (24.11.2026). */}
+      {bulunduguSayfalar.benzerler.length > 0 && (
+        <nav aria-label="Benzer mekânlar" className="flex flex-col gap-3 rounded-3xl border border-gray-100 bg-white p-6">
+          <h2 className="text-base font-bold text-zinc-900">
+            {bulunduguSayfalar.benzerler.some((b) => b.km !== null) ? 'Yakındaki benzer mekânlar' : 'Benzer mekânlar'}
+          </h2>
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {bulunduguSayfalar.benzerler.map((b) => (
+              <li key={b.id}>
+                <Link
+                  href={getBusinessUrl({ id: b.id, slug: b.slug, name: b.ad })}
+                  className="flex items-baseline justify-between gap-3 rounded-2xl border border-gray-100 px-4 py-3 text-sm transition-colors hover:border-[#FF4D00]"
+                >
+                  <span className="font-semibold text-zinc-900">{b.ad}</span>
+                  <span className="shrink-0 text-xs text-zinc-500">
+                    {[b.ilce, b.km !== null ? mesafeMetni(b.km) : null]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
                 </Link>
               </li>
             ))}
