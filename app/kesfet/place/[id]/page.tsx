@@ -71,10 +71,8 @@ export default async function PlaceDetail({ params }: PageProps) {
     place.image_url_5,
     place.image_url,
   ].filter(url => url && typeof url === 'string' && url.trim() !== '') as string[];
-
-  if (imageUrls.length === 0) {
-    imageUrls.push('/images/menuland-600x200.png');
-  }
+  // Görseli olmayan yerde liste boş kalır; BusinessGallery logoyu ortalanmış, soluk bir yer tutucu olarak gösterir.
+  // Önceden logo ana görsel yapılıyordu ve kutuyu doldururken kırpılıyordu.
 
   // Format URLs
   const formatUrl = (url?: string) => {

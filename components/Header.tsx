@@ -42,7 +42,7 @@ export default function Header() {
 
           {/* Logo */}
           <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4">
-            <Link href="/" className="flex items-center shrink-0">
+            <Link href="/" className="flex items-center shrink-0 koyu-mod-muaf">
               <Image
                 src="/images/menuland-600x200.png"
                 alt="Menuland Logo"

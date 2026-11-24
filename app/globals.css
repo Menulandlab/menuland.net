@@ -18,6 +18,18 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
+/* ===== SAFARI'NİN KOYU MODU (ADAPTIVE DARK MODE) ===== */
+/* Safari 27.3 ile gelen bu özellik, kullanıcı açtığında açık renkli sayfaları kendisi koyulaştırır. Logomuza da
+   kendince bir işlem uygulayıp arkasında gri bir kutu bırakıyordu. Logo ve mağaza rozetleri hem açık hem koyu
+   zeminde olduğu gibi doğru görünür. Bu sınıf Safari'ye bu öğelerin koyu zemine hazır olduğunu söyler; Safari
+   onlara dokunmaz, sayfanın geri kalanını yine koyulaştırır. Sınıfı yalnızca görselden oluşan öğelere (logo,
+   rozet) verin. Metin ya da form öğesi içeren bir bölüme verilirse, cihaz koyu moddayken o bölümün koyu renklerini
+   bizim tanımlamamız gerekir; Safari artık o bölümü koyulaştırmaz.
+   Kaynak: https://webkit.org/blog/18541/introducing-adaptive-dark-mode/ */
+.koyu-mod-muaf {
+  color-scheme: light dark;
+}
+
 /* ===== MOBİL DOKUNMA İYİLEŞTİRMELERİ ===== */
 /* iOS Safari / Chrome 300ms gecikmeyi ve gri flash'ı kaldırır */
 button,

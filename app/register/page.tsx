@@ -145,7 +145,7 @@ function RegisterForm() {
 
       {/* Header */}
       <div className="flex flex-col items-center mb-8">
-        <Link href="/" className="flex items-center group relative mb-4">
+        <Link href="/" className="flex items-center group relative mb-4 koyu-mod-muaf">
           <Image
             src="/images/menuland-600x200.png"
             alt="Menuland Logo"

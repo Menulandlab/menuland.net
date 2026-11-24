@@ -10,7 +10,7 @@ export default function Footer() {
           
           {/* Brand */}
           <div className="flex flex-col gap-4">
-            <Link href="/" className="flex items-center self-start">
+            <Link href="/" className="flex items-center self-start koyu-mod-muaf">
               <Image
                 src="/images/menuland-600x200.png"
                 alt="Menuland Logo"
@@ -84,7 +84,7 @@ export default function Footer() {
                 href="https://apps.apple.com/tr/app/menuland/id6618147785?l=tr"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block transition-transform hover:scale-102 active:scale-98"
+                className="inline-block transition-transform hover:scale-102 active:scale-98 koyu-mod-muaf"
               >
                 <Image
                   src="/images/app-store-badge.svg"
@@ -98,7 +98,7 @@ export default function Footer() {
                 href="https://play.google.com/store/apps/details?id=com.mycompany.menuland"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block transition-transform hover:scale-102 active:scale-98"
+                className="inline-block transition-transform hover:scale-102 active:scale-98 koyu-mod-muaf"
               >
                 <Image
                   src="/images/google-play-badge.svg"

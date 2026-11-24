@@ -16,7 +16,7 @@ export default function BusinessGallery({ images, name, rating }: BusinessGaller
   if (images.length === 0) {
     return (
       <div className="relative h-64 w-full md:w-80 rounded-2xl overflow-hidden bg-zinc-100 flex-shrink-0 flex items-center justify-center">
-        <img src="/images/menuland-600x200.png" alt={name} className="h-12 object-contain opacity-50" />
+        <img src="/images/menuland-600x200.png" alt={name} className="h-12 object-contain opacity-50 koyu-mod-muaf" />
       </div>
     );
   }
