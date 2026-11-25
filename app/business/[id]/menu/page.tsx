@@ -5,6 +5,7 @@ import { webPublicClient } from '@/lib/api';
 import { extractIdFromSlug, getBusinessUrl } from '@/lib/utils';
 import { APP_STORE_URL, GOOGLE_PLAY_URL, KURUMSAL_URL, whatsappBaglantisi } from '@/lib/site';
 import { disMenu } from '@/lib/disMenu';
+import { isletmeKaydiniGetir } from '@/lib/isletmeKaydi';
 import DisMenuYonlendirme from '@/components/DisMenuYonlendirme';
 
 /**
@@ -24,12 +25,8 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-// İşletme sayfasıyla aynı kural: API bilinmeyen işletmede 200 ile {success: false} döndürüyor
-const getBusinessData = cache(async (id: string) => {
-  const res = await webPublicClient.get(`/businesses/${id}`).catch(() => null);
-  const veri = res && res.data ? res.data : null;
-  return veri && veri.success !== false && veri.name ? veri : null;
-});
+// İşletme sayfasıyla aynı kural ve aynı önbellek etiketi (lib/isletmeKaydi.ts); işletme kaydedilince bu sayfa da yenilenir.
+const getBusinessData = cache(async (id: string) => isletmeKaydiniGetir(id));
 
 const getPlaceNames = cache(async (cityId?: number | string | null, districtId?: number | string | null) => {
   let il = '';

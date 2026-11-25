@@ -15,6 +15,7 @@ import { SITE_URL, DEFAULT_OG_IMAGE, KURUMSAL_URL, jsonLd, kisalt, whatsappBagla
 import { GezintiIzi, SikSorulanlar } from '@/components/SehirSayfasi';
 import ReklamAlani from '@/components/ReklamAlani';
 import { isletmeninSayfalari } from '@/lib/sehirSayfalari';
+import { isletmeKaydiniGetir } from '@/lib/isletmeKaydi';
 import { sayfadaOlanlar, isletmeBasligi, isletmeAciklamasi, calismaSaatleri, saatOzeti, mesafeMetni } from '@/lib/isletmeBilgisi';
 
 interface PageProps {
@@ -22,21 +23,19 @@ interface PageProps {
 }
 
 // Sayfa her ziyarette sunucuda baştan çizilmez: ilk istekte hazırlanır, bir gün önbellekten sunulur, süre dolunca
-// arka planda tazelenir. Menü ve fiyat değişikliği sitede en geç bir gün içinde görünür; QR menü ve uygulama anında
-// günceller. Derlemede hiçbir işletme sayfası üretilmez (generateStaticParams boş); her sayfa ilk istendiğinde hazırlanır.
+// arka planda tazelenir. İşletme panelde ya da yönetim panelinde kaydedilince API /api/isletme-yenile ucunu çağırır ve
+// sayfa bir sonraki ziyarette güncel bilgiyle yeniden hazırlanır (etiket: lib/isletmeKaydi.ts). Panelden geçmeyen
+// değişiklikler (ör. veritabanında elle yapılan düzeltmeler) en geç bir gün içinde görünür. Derlemede hiçbir işletme
+// sayfası üretilmez (generateStaticParams boş); her sayfa ilk istendiğinde hazırlanır.
 export const revalidate = 86400;
 export const dynamicParams = true;
 export async function generateStaticParams() {
   return [];
 }
 
-// generateMetadata ve sayfa aynı istekte aynı veriyi kullanır; API'ye her kayıt için bir kez gidilir.
-// API bilinmeyen ya da kaldırılmış işletmede 200 ile {success: false} döndürüyor; bu yanıt "işletme yok" sayılır.
-const getBusinessData = cache(async (id: string) => {
-  const res = await webPublicClient.get(`/businesses/${id}`).catch(() => null);
-  const veri = res && res.data ? res.data : null;
-  return veri && veri.success !== false && veri.name ? veri : null;
-});
+// generateMetadata ve sayfa aynı istekte aynı veriyi kullanır; API'ye her kayıt için bir kez gidilir. Kural ve önbellek
+// etiketi lib/isletmeKaydi.ts içinde: bilinmeyen işletme "yok" sayılır, API hatası sayfayı "bulunamadı" diye önbelleğe yazmaz.
+const getBusinessData = cache(async (id: string) => isletmeKaydiniGetir(id));
 
 const getMenuMode = cache(async (id: number, slug: string) => {
   try {
