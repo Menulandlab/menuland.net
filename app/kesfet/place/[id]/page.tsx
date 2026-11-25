@@ -25,6 +25,13 @@ const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+// Gezilecek yer sayfası ilk istekte hazırlanır ve bir gün önbellekten sunulur; bu bilgiler seyrek değişir.
+export const revalidate = 86400;
+export const dynamicParams = true;
+export async function generateStaticParams() {
+  return [];
+}
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

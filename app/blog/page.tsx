@@ -6,8 +6,8 @@ import { DEFAULT_OG_IMAGE } from '@/lib/site';
 import { Clock, Calendar, ArrowRight, BookOpen, ArrowLeft } from 'lucide-react';
 import ReklamAlani from '@/components/ReklamAlani';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Blog listesi bir saat önbellekten sunulur; yeni yazı en geç bir saat içinde listede görünür.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'Blog ve Lezzet Rehberi',

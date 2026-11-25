@@ -13,6 +13,13 @@ import DisMenuYonlendirme from '@/components/DisMenuYonlendirme';
  * davet ve uygulama daveti gösterilir, birkaç saniye sonra menüye geçilir. Arama motorlarına kapalıdır.
  */
 
+// İşletme sayfasıyla aynı önbellek kuralı: ilk istekte hazırlanır, bir saat önbellekten sunulur.
+export const revalidate = 3600;
+export const dynamicParams = true;
+export async function generateStaticParams() {
+  return [];
+}
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

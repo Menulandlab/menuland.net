@@ -7,9 +7,10 @@ import ReklamAlani from '@/components/ReklamAlani';
 import BlogCtaCard from '@/components/BlogCtaCard';
 import { SITE_URL, jsonLd } from '@/lib/site';
 
-export const dynamic = 'force-dynamic';
+// Yazılar derlemede hazırlanır ve bir saat önbellekten sunulur; derlemeden sonra eklenen yazı ilk istendiğinde
+// hazırlanır.
 export const dynamicParams = true;
-export const revalidate = 0;
+export const revalidate = 3600;
 
 interface PageProps {
   params: Promise<{ slug: string }>;

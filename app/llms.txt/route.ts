@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { docsCategories } from '@/src/data/docs-data';
 import { tumSehirler, yerVerisi, EN_AZ_YER, bulunmaEki } from '@/lib/sehirSayfalari';
 
+// Bir saat önbellekten sunulur; şehir listesi saatte bir tazelenir.
+export const revalidate = 3600;
+
 export async function GET() {
   let text = `# Menuland - Dijital Menü, Keşif ve Sadakat Platformu
 
