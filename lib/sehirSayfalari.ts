@@ -95,8 +95,8 @@ export interface YerVerisi {
 
 type Ham = Record<string, unknown>;
 
-async function getJson(yol: string): Promise<unknown> {
-  const yanit = await fetch(`${API_URL}${yol}`, { next: { revalidate: YENILEME_SANIYE } });
+async function getJson(yol: string, sure: number = YENILEME_SANIYE): Promise<unknown> {
+  const yanit = await fetch(`${API_URL}${yol}`, { next: { revalidate: sure } });
   if (!yanit.ok) {
     throw new Error(`${yol} isteği ${yanit.status} döndü`);
   }
@@ -126,29 +126,31 @@ export function ilceGorunenAdi(ilceAdi: string, sehirAdi: string): string {
  * 81 il, içerikten hesaplanan durumla. API'nin eski sürümü özet döndürmezse (alanlar yoksa) yalnızca veritabanında
  * etkin olan iller açık sayılır; böylece API'den önce yayına çıkan site de bugünkü gibi çalışır.
  */
+async function tumSehirleriGetir(sure: number): Promise<Sehir[]> {
+  const ham = dizi(await getJson('/cities?ozet=1', sure)).filter((s) => s && s.id && s.name);
+  if (ham.length === 0) {
+    throw new Error('İl listesi boş geldi');
+  }
+  const ozetVar = ham.some((s) => 'isletme_sayisi' in s);
+  return ham
+    .map((s) => {
+      const isletmeSayisi = ozetVar ? Number(s.isletme_sayisi) || 0 : s.status === 'active' ? EN_AZ_ISLETME : 0;
+      return {
+        id: Number(s.id),
+        ad: String(s.name),
+        slug: slugify(String(s.name)),
+        isletmeSayisi,
+        yerSayisi: ozetVar ? Number(s.yer_sayisi) || 0 : 0,
+        enlem: sayiVeyaNull(s.latitude),
+        boylam: sayiVeyaNull(s.longitude),
+        acik: isletmeSayisi >= EN_AZ_ISLETME,
+      };
+    })
+    .sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
+}
+
 export const tumSehirler = unstable_cache(
-  async (): Promise<Sehir[]> => {
-    const ham = dizi(await getJson('/cities?ozet=1')).filter((s) => s && s.id && s.name);
-    if (ham.length === 0) {
-      throw new Error('İl listesi boş geldi');
-    }
-    const ozetVar = ham.some((s) => 'isletme_sayisi' in s);
-    return ham
-      .map((s) => {
-        const isletmeSayisi = ozetVar ? Number(s.isletme_sayisi) || 0 : s.status === 'active' ? EN_AZ_ISLETME : 0;
-        return {
-          id: Number(s.id),
-          ad: String(s.name),
-          slug: slugify(String(s.name)),
-          isletmeSayisi,
-          yerSayisi: ozetVar ? Number(s.yer_sayisi) || 0 : 0,
-          enlem: sayiVeyaNull(s.latitude),
-          boylam: sayiVeyaNull(s.longitude),
-          acik: isletmeSayisi >= EN_AZ_ISLETME,
-        };
-      })
-      .sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
-  },
+  async (): Promise<Sehir[]> => tumSehirleriGetir(YENILEME_SANIYE),
   ['sehir-sayfalari-sehirler-v2'],
   { revalidate: YENILEME_SANIYE }
 );
@@ -235,22 +237,45 @@ function sehirVerisiniKur(sehir: Sehir, ilceHam: unknown, kategoriHam: unknown, 
   return { sehir, isletmeler, ilceler, kategoriler, ilceAdlari };
 }
 
+async function sehirVerisiniGetir(sehirSlug: string, sehirler: Sehir[], sure: number): Promise<SehirVerisi | null> {
+  const sehir = sehirler.find((s) => s.slug === sehirSlug);
+  if (!sehir || !sehir.acik) return null;
+
+  const [ilceHam, kategoriHam, isletmeHam] = await Promise.all([
+    getJson(`/districts?city_id=${sehir.id}`, sure),
+    getJson('/businesslistingcategories', sure),
+    // alanlar=liste: açıklama, yasal metinler ve 10 görsel alanı gelmez (Ordu'da 576 KB yerine yaklaşık 170 KB).
+    getJson(`/businesses?city_id=${sehir.id}&status=approved&alanlar=liste`, sure),
+  ]);
+  return sehirVerisiniKur(sehir, ilceHam, kategoriHam, isletmeHam);
+}
+
 /** Bir ilin sayfa verisi; il yoksa ya da açık değilse null. */
 export const sehirVerisi = unstable_cache(
-  async (sehirSlug: string): Promise<SehirVerisi | null> => {
-    const sehir = (await tumSehirler()).find((s) => s.slug === sehirSlug);
-    if (!sehir || !sehir.acik) return null;
-
-    const [ilceHam, kategoriHam, isletmeHam] = await Promise.all([
-      getJson(`/districts?city_id=${sehir.id}`),
-      getJson('/businesslistingcategories'),
-      // alanlar=liste: açıklama, yasal metinler ve 10 görsel alanı gelmez (Ordu'da 576 KB yerine yaklaşık 170 KB).
-      getJson(`/businesses?city_id=${sehir.id}&status=approved&alanlar=liste`),
-    ]);
-    return sehirVerisiniKur(sehir, ilceHam, kategoriHam, isletmeHam);
-  },
+  async (sehirSlug: string): Promise<SehirVerisi | null> =>
+    sehirVerisiniGetir(sehirSlug, await tumSehirler(), YENILEME_SANIYE),
   ['sehir-sayfalari-veri-v3'],
   { revalidate: YENILEME_SANIYE }
+);
+
+/**
+ * İşletme sayfası bir gün önbellekte kalır (app/business/[id]). Next.js bir sayfanın önbellek süresini, sayfada okunan en
+ * kısa süreli önbelleğe indirdiği için işletme sayfası il ve benzer işletme verisini aynı kaynaktan ama günlük önbellekle
+ * okur. Şehir sayfaları saatlik sürümü kullanmaya devam eder.
+ */
+const GUNLUK_SANIYE = 86400;
+
+const tumSehirlerGunluk = unstable_cache(
+  async (): Promise<Sehir[]> => tumSehirleriGetir(GUNLUK_SANIYE),
+  ['isletme-sayfasi-sehirler-v1'],
+  { revalidate: GUNLUK_SANIYE }
+);
+
+const sehirVerisiGunluk = unstable_cache(
+  async (sehirSlug: string): Promise<SehirVerisi | null> =>
+    sehirVerisiniGetir(sehirSlug, await tumSehirlerGunluk(), GUNLUK_SANIYE),
+  ['isletme-sayfasi-sehir-veri-v1'],
+  { revalidate: GUNLUK_SANIYE }
 );
 
 /** Aynı anda en fazla bu kadar il için istek atılır; barındırma sunucusu bir anda yüzlerce istek almaz. */
@@ -409,9 +434,9 @@ export async function isletmeninSayfalari(isletme: {
   const bos = { sehir: null, ilce: null, kategoriler: [], benzerler: [] };
   if (!isletme.city_id) return bos;
   try {
-    const sehir = (await acikSehirler()).find((s) => s.id === Number(isletme.city_id));
+    const sehir = (await tumSehirlerGunluk()).find((s) => s.acik && s.id === Number(isletme.city_id));
     if (!sehir) return bos;
-    const veri = await sehirVerisi(sehir.slug);
+    const veri = await sehirVerisiGunluk(sehir.slug);
     if (!veri) return bos;
     const ilce = veri.ilceler.find((d) => d.id === Number(isletme.district_id));
     const idler = new Set((isletme.categories || []).map((c) => Number(c.id)));

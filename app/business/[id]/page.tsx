@@ -21,10 +21,10 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-// Sayfa her ziyarette sunucuda baştan çizilmez: ilk istekte hazırlanır, bir saat önbellekten sunulur, süre dolunca
-// arka planda tazelenir. Menü ve fiyat değişikliği sitede en geç bir saat içinde görünür. Derlemede hiçbir işletme
-// sayfası üretilmez (generateStaticParams boş); her sayfa ilk istendiğinde hazırlanır.
-export const revalidate = 3600;
+// Sayfa her ziyarette sunucuda baştan çizilmez: ilk istekte hazırlanır, bir gün önbellekten sunulur, süre dolunca
+// arka planda tazelenir. Menü ve fiyat değişikliği sitede en geç bir gün içinde görünür; QR menü ve uygulama anında
+// günceller. Derlemede hiçbir işletme sayfası üretilmez (generateStaticParams boş); her sayfa ilk istendiğinde hazırlanır.
+export const revalidate = 86400;
 export const dynamicParams = true;
 export async function generateStaticParams() {
   return [];
