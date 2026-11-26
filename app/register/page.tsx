@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense, useEffect } from 'react';
+import React, { useState, Suspense, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,14 +8,17 @@ import Script from 'next/script';
 import { Eye, EyeOff, Lock, User, Mail, UserCheck, AlertCircle, CheckSquare, Square, Sparkles } from 'lucide-react';
 import { registerAction } from '../actions/auth';
 import { useAuth } from '../../context/AuthContext';
+import { guvenliYol } from '@/lib/guvenliYol';
 
 const GOOGLE_CLIENT_ID = '956589611008-ftqqljp9fo186apcmsrguommeaftf5eg.apps.googleusercontent.com';
 
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/';
-  const { loginWithGoogle, isAuthenticated } = useAuth();
+  // Yalnızca sitenin kendi yollarına dönülür (başka siteye yönlendirme engellenir).
+  const redirectTo = guvenliYol(searchParams.get('redirect'));
+  const yorumIcin = redirectTo.includes('#yorumlar');
+  const { login, loginWithGoogle, isAuthenticated } = useAuth();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -27,14 +30,29 @@ function RegisterForm() {
   const [isToSAccepted, setIsToSAccepted] = useState(false);
   const [isKVKKAcknowledged, setIsKVKKAcknowledged] = useState(false);
   const [isExplicitConsentGiven, setIsExplicitConsentGiven] = useState(false);
+  // Botlar için gizli alan; insan görmez ve doldurmaz.
+  const [tuzak, setTuzak] = useState('');
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Eğer zaten giriş yapılmışsa yönlendir
+  // Girişten sonra gidilecek yer. Dönüş adresinde #yorumlar gibi bir bölüm varsa sayfa baştan yüklenir: tarayıcı o
+  // bölüme kendisi kayar ve yorum taslağı kesin görünür (istemci içi geçişte bölüm bilgisi düşebiliyordu, 26.11.2026).
+  const yonlendiriliyor = useRef(false);
+  const hedefeGit = () => {
+    yonlendiriliyor.current = true;
+    if (redirectTo.includes('#')) {
+      window.location.assign(redirectTo);
+      return;
+    }
+    router.push(redirectTo);
+    router.refresh();
+  };
+
+  // Sayfa açıldığında zaten giriş yapılmışsa yönlendir.
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !yonlendiriliyor.current) {
       router.push(redirectTo);
     }
   }, [isAuthenticated, router, redirectTo]);
@@ -45,8 +63,7 @@ function RegisterForm() {
     try {
       const res = await loginWithGoogle(response.credential);
       if (res.success) {
-        router.push(redirectTo);
-        router.refresh();
+        hedefeGit();
       } else {
         setError(res.message || 'Google ile bağlantı başarısız.');
       }
@@ -101,6 +118,16 @@ function RegisterForm() {
       return;
     }
 
+    if (!/^[A-Za-z0-9._]{3,30}$/.test(username.trim())) {
+      setError('Kullanıcı adı 3–30 karakter olmalı; yalnızca harf, rakam, nokta ve alt çizgi kullanılabilir.');
+      return;
+    }
+
+    if (password.trim().length < 8) {
+      setError('Şifreniz en az 8 karakter olmalı.');
+      return;
+    }
+
     if (!isToSAccepted || !isKVKKAcknowledged) {
       setError('Kayıt olabilmek için Kullanım Şartları\'nı kabul etmeli ve KVKK Aydınlatma Metni\'ni okumalısınız.');
       return;
@@ -113,14 +140,23 @@ function RegisterForm() {
         name.trim(),
         email.trim(),
         username.trim(),
-        password.trim()
+        password.trim(),
+        isExplicitConsentGiven,
+        tuzak
       );
 
       if (res.success) {
-        setSuccess('Kaydınız başarıyla oluşturuldu! Giriş sayfasına yönlendiriliyorsunuz...');
-        setTimeout(() => {
-          router.push(`/login${redirectTo !== '/' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`);
-        }, 2000);
+        // Kayıttan sonra aynı bilgilerle oturum açılır ve kullanıcı geldiği sayfaya döner (ör. yorum yazdığı işletme).
+        const giris = await login(username.trim(), password.trim());
+        if (giris.success) {
+          setSuccess('Hesabınız oluşturuldu. Yönlendiriliyorsunuz…');
+          hedefeGit();
+        } else {
+          setSuccess('Hesabınız oluşturuldu. Giriş sayfasına yönlendiriliyorsunuz…');
+          setTimeout(() => {
+            router.push(`/login${redirectTo !== '/' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`);
+          }, 1500);
+        }
       } else {
         setError(res.message || 'Kayıt sırasında bir hata oluştu.');
       }
@@ -159,7 +195,9 @@ function RegisterForm() {
           Bireysel Kayıt <Sparkles className="h-5 w-5 text-[#FF4D00]" />
         </h1>
         <p className="text-xs text-zinc-500 mt-1.5 text-center">
-          Menuland dünyasına katılın, favori mekanlarınızı seçin ve indirimler kazanın.
+          {yorumIcin
+            ? 'Hesabınızı oluşturun; yorumunuz saklandı, kayıttan sonra sayfaya dönüp gönderebilirsiniz.'
+            : 'Menuland dünyasına katılın, favori mekanlarınızı seçin ve indirimler kazanın.'}
         </p>
       </div>
 
@@ -190,6 +228,8 @@ function RegisterForm() {
             <input
               id="name"
               type="text"
+              autoComplete="name"
+              maxLength={80}
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -212,6 +252,10 @@ function RegisterForm() {
             <input
               id="email"
               type="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              maxLength={120}
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -234,6 +278,11 @@ function RegisterForm() {
             <input
               id="username"
               type="text"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              maxLength={30}
+              aria-describedby="username-ipucu"
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -242,6 +291,9 @@ function RegisterForm() {
               className="w-full bg-zinc-50 border border-gray-200 rounded-2xl py-3 pl-11 pr-4 text-sm text-zinc-900 placeholder-zinc-450 focus:bg-white focus:border-[#FF4D00] focus:ring-1 focus:ring-[#FF4D00] focus:outline-none transition-all"
             />
           </div>
+          <p id="username-ipucu" className="text-[11px] text-zinc-500">
+            Yorumlarınızda bu ad görünür. 3–30 karakter; harf, rakam, nokta ve alt çizgi.
+          </p>
         </div>
 
         {/* Password */}
@@ -256,6 +308,9 @@ function RegisterForm() {
             <input
               id="password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              minLength={8}
+              aria-describedby="sifre-ipucu"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -267,11 +322,29 @@ function RegisterForm() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               disabled={loading}
+              aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
               className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-605"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+          <p id="sifre-ipucu" className="text-[11px] text-zinc-500">
+            En az 8 karakter.
+          </p>
+        </div>
+
+        {/* Botlar için gizli alan: ekranda ve ekran okuyucuda görünmez. */}
+        <div className="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+          <label htmlFor="web_sitesi">Web siteniz</label>
+          <input
+            id="web_sitesi"
+            name="web_sitesi"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={tuzak}
+            onChange={(e) => setTuzak(e.target.value)}
+          />
         </div>
 
         {/* Agreements Consent */}
@@ -324,12 +397,7 @@ function RegisterForm() {
               {isExplicitConsentGiven ? <CheckSquare className="h-4.5 w-4.5 fill-[#FF4D00]/10 pointer-events-none" /> : <Square className="h-4.5 w-4.5 text-zinc-350 pointer-events-none" />}
             </div>
             <span className="text-[11px] leading-relaxed text-zinc-650">
-              <span onClick={(e) => e.stopPropagation()}>
-                <Link href="/kvkk" target="_blank" className="text-[#FF4D00] font-bold hover:underline">
-                  Açık Rıza Metni
-                </Link>
-              </span>
-              &apos;ni onaylıyorum. <span className="text-zinc-400">(İsteğe Bağlı)</span>
+              Kampanya ve duyuruları e-postayla almak istiyorum. <span className="text-zinc-400">(İsteğe Bağlı)</span>
             </span>
           </button>
         </div>
@@ -357,6 +425,17 @@ function RegisterForm() {
         <div className="space-y-3 flex flex-col items-center">
           {/* Google Sign-in Container */}
           <div id="google-signup-btn-container" className="w-[240px] h-[40px] flex justify-center" />
+          <p className="max-w-[280px] text-center text-[10px] leading-relaxed text-zinc-400">
+            Google ile devam ederek{' '}
+            <Link href="/kullanim-kosullari" target="_blank" className="font-semibold hover:underline">
+              Kullanım Koşulları
+            </Link>
+            &apos;nı kabul etmiş ve{' '}
+            <Link href="/kvkk" target="_blank" className="font-semibold hover:underline">
+              KVKK Aydınlatma Metni
+            </Link>
+            &apos;ni okumuş olursunuz.
+          </p>
 
           {/* Apple placeholder */}
           <button

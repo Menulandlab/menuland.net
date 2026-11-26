@@ -14,6 +14,8 @@ import { extractIdFromSlug, getBusinessUrl } from '../../../lib/utils';
 import { SITE_URL, DEFAULT_OG_IMAGE, KURUMSAL_URL, jsonLd, kisalt, whatsappBaglantisi } from '@/lib/site';
 import { GezintiIzi, SikSorulanlar } from '@/components/SehirSayfasi';
 import ReklamAlani from '@/components/ReklamAlani';
+import YorumBolumu from '@/components/YorumBolumu';
+import { yorumlariDuzenle } from '@/lib/yorumlar';
 import { isletmeninSayfalari } from '@/lib/sehirSayfalari';
 import { isletmeKaydiniGetir } from '@/lib/isletmeKaydi';
 import { sayfadaOlanlar, isletmeBasligi, isletmeAciklamasi, calismaSaatleri, saatOzeti, mesafeMetni } from '@/lib/isletmeBilgisi';
@@ -143,7 +145,7 @@ export default async function BusinessDetail({ params }: PageProps) {
   }
 
   const business = businessData;
-  const comments = Array.isArray(commentsRes.data) ? commentsRes.data : [];
+  const yorumlar = yorumlariDuzenle(commentsRes.data);
   const campaigns = Array.isArray(campaignsRes.data) ? campaignsRes.data : [];
 
   // Menü verilerini çek
@@ -556,40 +558,8 @@ export default async function BusinessDetail({ params }: PageProps) {
 
           {reklamUygun && <ReklamAlani yer="isletme-menu-alti" />}
 
-          {/* Comments Section */}
-          <section className="rounded-3xl border border-gray-100 bg-white p-6 sm:p-8 flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold tracking-tight text-zinc-900">Yorumlar ({comments.length})</h2>
-            </div>
-            
-            {comments.length === 0 ? (
-              <p className="text-sm text-zinc-500">Mekana henüz yorum yapılmamış. İlk yorumu mobil uygulamamız üzerinden yapabilirsiniz.</p>
-            ) : (
-              <div className="flex flex-col gap-6 divide-y divide-gray-100">
-                {comments.map((comment: any) => (
-                  <div key={comment.id} className="flex flex-col gap-2 pt-6 first:pt-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-zinc-800">{comment.user_name || 'Anonim'}</span>
-                      <div className="flex items-center gap-0.5 text-xs text-zinc-500">
-                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                        <span>{comment.rating} / 5</span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-zinc-600 leading-relaxed">{comment.comment}</p>
-                    <span className="text-[10px] text-zinc-400">{new Date(comment.created_at).toLocaleDateString('tr-TR')}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* App Promotion CTA for commenting */}
-            <div className="mt-4 rounded-2xl bg-zinc-50 border border-gray-100 p-4 text-center">
-              <p className="text-xs text-zinc-600 leading-relaxed">
-                Bu mekâna yorum yazmak, favorilerinize eklemek ve sadakat puanları biriktirmek için{' '}
-                <strong className="font-semibold text-zinc-800">Menuland mobil uygulamasını</strong> indirebilirsiniz.
-              </p>
-            </div>
-          </section>
+          {/* Yorumlar: liste sunucuda çizilir; yazma, silme ve bildirme giriş yapmış bireysel hesapla (26.11.2026). */}
+          <YorumBolumu isletmeId={Number(business.id)} isletmeAdi={business.name} yorumlar={yorumlar} yazilabilir={!pasif} />
 
         </div>
 

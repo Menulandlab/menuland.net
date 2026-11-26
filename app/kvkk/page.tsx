@@ -42,6 +42,9 @@ export default function KvkkPage() {
             <li>Bilgi güvenliği süreçlerinin yürütülmesi ve yasal mevzuattan kaynaklanan yükümlülüklerin yerine getirilmesi</li>
           </ul>
           <p>amacıyla, KVKK'nın 5. ve 6. maddelerinde belirtilen kişisel veri işleme şartları ve amaçları dahilinde hukuka uygun olarak işlenmektedir.</p>
+          <p>
+            Menuland hesabı oluşturursanız adınız soyadınız, e-posta adresiniz, kullanıcı adınız ve şifrenizin geri çevrilemez özeti; işletmelere yorum yazarsanız verdiğiniz puan, yorumunuz ve yorumun tarihi, hesabınızı yönetmek ve yorum hizmetini sunmak amacıyla KVKK'nın 5. maddesinde yer alan sözleşmenin kurulması ve ifası şartına dayanılarak işlenir. Yorumlarınız kullanıcı adınızla birlikte web sitesinde ve mobil uygulamada herkese açık yayımlanır. Kampanya ve duyuru e-postaları yalnızca bu iletiler için izin verdiyseniz gönderilir.
+          </p>
         </section>
 
         <section className="flex flex-col gap-2">

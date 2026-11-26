@@ -24,6 +24,16 @@ export async function loginAction(username: string, password: string) {
         return { success: false, message: 'Sunucudan eksik veri geldi.' };
       }
 
+      // Sitede yalnızca bireysel (uygulama) hesabıyla oturum açılır. /auth/login işletme sahibi ve yönetici
+      // hesaplarını da kabul ediyor; onların jetonu sitede işe yaramaz ve çereze yazılmaz (26.11.2026).
+      if (user.user_type !== 'mobile') {
+        return {
+          success: false,
+          message:
+            'Bu bilgiler bir işletme ya da yönetim hesabına ait. Sitede Menuland bireysel hesabınızla giriş yapın; işletme paneli isletme.menuland.net adresinde.',
+        };
+      }
+
       // Token'ı HTTP-only, Secure ve SameSite çerez olarak kaydet (En Üst Düzey Güvenlik)
       const cookieStore = await cookies();
       cookieStore.set('authToken', token, {
@@ -123,14 +133,47 @@ export async function getSessionAction(): Promise<SessionData> {
   }
 }
 
+/** Kayıt bilgilerini API'ye göndermeden önce denetler; sorun varsa kullanıcıya gösterilecek mesajı döndürür. */
+function kayitHatasi(ad: string, eposta: string, kullaniciAdi: string, sifre: string): string | null {
+  if (ad.length < 2 || ad.length > 80) return 'Lütfen adınızı ve soyadınızı yazın.';
+  if (eposta.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(eposta)) return 'Lütfen geçerli bir e-posta adresi yazın.';
+  if (!/^[A-Za-z0-9._]{3,30}$/.test(kullaniciAdi)) {
+    return 'Kullanıcı adı 3–30 karakter olmalı; yalnızca harf, rakam, nokta ve alt çizgi kullanılabilir.';
+  }
+  if (sifre.length < 8 || sifre.length > 128) return 'Şifreniz en az 8 karakter olmalı.';
+  return null;
+}
+
 // Bireysel kayıt işlemi
-export async function registerAction(name: string, email: string, username: string, password: string) {
+// epostaIzni: kayıt formundaki isteğe bağlı "kampanya ve duyuruları e-postayla almak istiyorum" kutusu; API bunu
+// explicit_consent_given olarak saklar. tuzak: botlar için gizli alan; insan görmez ve doldurmaz.
+export async function registerAction(
+  name: string,
+  email: string,
+  username: string,
+  password: string,
+  epostaIzni = false,
+  tuzak = '',
+) {
+  if (tuzak) {
+    return { success: false, message: 'Kayıt sırasında bir hata oluştu.' };
+  }
+  const ad = String(name ?? '').trim();
+  const eposta = String(email ?? '').trim().toLowerCase();
+  const kullaniciAdi = String(username ?? '').trim();
+  const sifre = String(password ?? '');
+  const hata = kayitHatasi(ad, eposta, kullaniciAdi, sifre);
+  if (hata) {
+    return { success: false, message: hata };
+  }
+
   try {
     const response = await publicApiClient.post('/register/user', {
-      name,
-      email,
-      username,
-      password,
+      name: ad,
+      email: eposta,
+      username: kullaniciAdi,
+      password: sifre,
+      explicit_consent_given: epostaIzni === true,
     });
 
     if (response.data && response.data.success) {

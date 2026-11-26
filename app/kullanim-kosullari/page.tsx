@@ -49,7 +49,17 @@ export default function TermsPage() {
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-bold text-zinc-950 border-b border-gray-100 pb-2">4. Hizmet Değişiklikleri</h2>
+          <h2 className="text-lg font-bold text-zinc-950 border-b border-gray-100 pb-2">4. Kullanıcı Yorumları</h2>
+          <p>
+            Bireysel hesabıyla giriş yapan Kullanıcılar işletmelere puan verebilir ve yorum yazabilir. Yorumlar, yazanın kullanıcı adıyla birlikte web sitesinde ve mobil uygulamada herkese açık yayımlanır ve gerçek bir deneyime dayanmalıdır.
+          </p>
+          <p>
+            Hakaret, küfür, tehdit ya da nefret söylemi; ad soyad, telefon, adres gibi kişisel veriler; reklam ya da bağlantı; yanıltıcı veya gerçeğe aykırı iddialar ve başkalarının haklarını ihlal eden içerikler yasaktır. MLD Yazılım bu kurallara aykırı olduğunu değerlendirdiği ya da hakkında bildirim aldığı yorumları kaldırabilir ve kuralları ihlal eden hesapları askıya alabilir. Yorumun içeriğinden doğan sorumluluk yorumu yazan Kullanıcıya aittir. Uygunsuz bir yorumu, yorumun altındaki "Bildir" bağlantısıyla bize iletebilirsiniz.
+          </p>
+        </section>
+
+        <section className="flex flex-col gap-2">
+          <h2 className="text-lg font-bold text-zinc-950 border-b border-gray-100 pb-2">5. Hizmet Değişiklikleri</h2>
           <p>
             MLD Yazılım, önceden haber vermeksizin Platform özelliklerini değiştirme, askıya alma veya durdurma hakkını saklı tutar. Kullanım Koşulları gerektiğinde güncellenebilir ve güncel koşullar yayınlandığı andan itibaren yürürlüğe girer.
           </p>

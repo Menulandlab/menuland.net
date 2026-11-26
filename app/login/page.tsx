@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, Suspense, useEffect } from 'react';
+import React, { useState, Suspense, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import Script from 'next/script';
 import { Eye, EyeOff, Lock, User, AlertCircle, Sparkles } from 'lucide-react';
+import { guvenliYol } from '@/lib/guvenliYol';
 
 const GOOGLE_CLIENT_ID = '956589611008-ftqqljp9fo186apcmsrguommeaftf5eg.apps.googleusercontent.com';
 
@@ -14,7 +15,9 @@ function LoginForm() {
   const { login, loginWithGoogle, isAuthenticated } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/';
+  // Yalnızca sitenin kendi yollarına dönülür (başka siteye yönlendirme engellenir).
+  const redirectTo = guvenliYol(searchParams.get('redirect'));
+  const yorumIcin = redirectTo.includes('#yorumlar');
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -22,9 +25,22 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Eğer zaten giriş yapılmışsa yönlendir
+  // Girişten sonra gidilecek yer. Dönüş adresinde #yorumlar gibi bir bölüm varsa sayfa baştan yüklenir: tarayıcı o
+  // bölüme kendisi kayar ve yorum taslağı kesin görünür (istemci içi geçişte bölüm bilgisi düşebiliyordu, 26.11.2026).
+  const yonlendiriliyor = useRef(false);
+  const hedefeGit = () => {
+    yonlendiriliyor.current = true;
+    if (redirectTo.includes('#')) {
+      window.location.assign(redirectTo);
+      return;
+    }
+    router.push(redirectTo);
+    router.refresh();
+  };
+
+  // Sayfa açıldığında zaten giriş yapılmışsa yönlendir.
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !yonlendiriliyor.current) {
       router.push(redirectTo);
     }
   }, [isAuthenticated, router, redirectTo]);
@@ -35,8 +51,7 @@ function LoginForm() {
     try {
       const res = await loginWithGoogle(response.credential);
       if (res.success) {
-        router.push(redirectTo);
-        router.refresh();
+        hedefeGit();
       } else {
         setError(res.message || 'Google ile giriş başarısız.');
       }
@@ -94,8 +109,7 @@ function LoginForm() {
     try {
       const res = await login(username.trim(), password.trim());
       if (res.success) {
-        router.push(redirectTo);
-        router.refresh();
+        hedefeGit();
       } else {
         setError(res.message || 'Kullanıcı adı veya şifre hatalı.');
       }
@@ -134,7 +148,9 @@ function LoginForm() {
           Giriş Yap <Sparkles className="h-5 w-5 text-[#FF4D00]" />
         </h1>
         <p className="text-xs text-zinc-500 mt-1.5 text-center">
-          Rezervasyon yapmak ve lezzetleri keşfetmek için hesabınıza bağlanın.
+          {yorumIcin
+            ? 'Yorumunuzu göndermek için hesabınıza giriş yapın. Yazdıklarınız saklandı; girişten sonra sayfaya dönersiniz.'
+            : 'Rezervasyon yapmak ve lezzetleri keşfetmek için hesabınıza bağlanın.'}
         </p>
       </div>
 
@@ -158,6 +174,9 @@ function LoginForm() {
             <input
               id="username"
               type="text"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -182,6 +201,7 @@ function LoginForm() {
             <input
               id="password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -193,6 +213,7 @@ function LoginForm() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               disabled={loading}
+              aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
               className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-605"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -223,6 +244,17 @@ function LoginForm() {
         <div className="space-y-3 flex flex-col items-center">
           {/* Google Sign-in Container */}
           <div id="google-signin-btn-container" className="w-[240px] h-[40px] flex justify-center" />
+          <p className="max-w-[280px] text-center text-[10px] leading-relaxed text-zinc-400">
+            Google ile ilk kez devam ettiğinizde hesabınız oluşturulur;{' '}
+            <Link href="/kullanim-kosullari" target="_blank" className="font-semibold hover:underline">
+              Kullanım Koşulları
+            </Link>
+            &apos;nı kabul etmiş ve{' '}
+            <Link href="/kvkk" target="_blank" className="font-semibold hover:underline">
+              KVKK Aydınlatma Metni
+            </Link>
+            &apos;ni okumuş olursunuz.
+          </p>
         </div>
       </div>
 
