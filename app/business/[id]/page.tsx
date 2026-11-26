@@ -210,10 +210,10 @@ export default async function BusinessDetail({ params }: PageProps) {
     (menuMode === 'fixed' && Array.isArray(fixedMenuData?.categories) && fixedMenuData.categories.length > 0);
   // Menuland'de menüsü olmayan işletmenin kendi menü bağlantısı (varsa yönlendirme sayfasıyla gösterilir)
   const disMenuBilgisi = menuVar ? null : disMenu(business.menu_url);
-  // Reklam yalnızca Menuland menüsü olan, aktif işletmenin sayfasında: menüsüz sayfada özgün içerik az
-  // (AdSense: az içerikli sayfaya reklam kodu konmaz).
+  // Reklam (Yandex, 26.11.2026) yalnızca Menuland menüsü olmayan, aktif işletmenin sayfasında. Menüsü Menuland'de
+  // olan işletmeler müşterimizdir; sayfalarında rakip bir işletmenin reklamı çıkmasın.
   const pasif = business.is_active !== undefined && business.is_active !== null && Number(business.is_active) === 0;
-  const reklamUygun = menuVar && !pasif;
+  const reklamUygun = !menuVar && !pasif;
   // Sokak adresi 16.11.2026 göçüyle gelen "adres" alanında; eski kayıtlarda "address" de olabilir.
   const adres: string | null = business.adres || business.address || null;
   const enlem = Number(business.latitude);

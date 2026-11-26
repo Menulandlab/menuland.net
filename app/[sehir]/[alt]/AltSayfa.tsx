@@ -17,6 +17,10 @@ import {
 import { SITE_URL, DEFAULT_OG_IMAGE, jsonLd, kisalt } from '@/lib/site';
 import { getBusinessUrl } from '@/lib/utils';
 import { GezintiIzi, IsletmeIzgarasi, BaglantiCipleri, EkosistemBolumu, SikSorulanlar, IsletmeAdlari } from '@/components/SehirSayfasi';
+import ReklamAlani from '@/components/ReklamAlani';
+
+/** Liste içi reklam bu kadar mekândan sonra girer (12: iki ve üç sütunlu ızgarada satır tam kalır). */
+const LISTE_ARASI = 12;
 
 /**
  * Şehir × kategori (örneğin /ordu/kahvalti) ya da ilçe (örneğin /ordu/altinordu) sayfasının içeriği ve başlıkları.
@@ -274,7 +278,18 @@ export async function AltSayfa({ sehir, alt, no }: { sehir: string; alt: string;
         </p>
       </header>
 
-      <IsletmeIzgarasi isletmeler={gosterilen} ilceAdlari={veri.ilceAdlari} kategoriAdlari={kategoriAdlari} />
+      {/* Uzun listede ilk 12 mekândan sonra bir reklam, listenin sonunda bir reklam (Yandex, 26.11.2026). */}
+      {gosterilen.length > LISTE_ARASI + 3 ? (
+        <>
+          <IsletmeIzgarasi isletmeler={gosterilen.slice(0, LISTE_ARASI)} ilceAdlari={veri.ilceAdlari} kategoriAdlari={kategoriAdlari} />
+          <ReklamAlani yer="liste-orta" />
+          <IsletmeIzgarasi isletmeler={gosterilen.slice(LISTE_ARASI)} ilceAdlari={veri.ilceAdlari} kategoriAdlari={kategoriAdlari} />
+        </>
+      ) : (
+        <IsletmeIzgarasi isletmeler={gosterilen} ilceAdlari={veri.ilceAdlari} kategoriAdlari={kategoriAdlari} />
+      )}
+
+      <ReklamAlani yer="liste-alti" />
 
       {toplamSayfa > 1 && (
         <nav aria-label="Sayfalar" className="flex items-center justify-center gap-4 text-sm">

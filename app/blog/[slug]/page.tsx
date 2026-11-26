@@ -85,6 +85,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+/** Yazı gövdesinin biçimi (yazı içi reklamla ikiye bölününce iki parça da aynı sınıfı alır). */
+const YAZI_SINIFI = `prose prose-zinc sm:prose-lg max-w-none text-zinc-700 leading-relaxed
+  [&>p]:mb-6 [&>p]:leading-relaxed
+  [&>h2]:text-2xl [&>h2]:font-black [&>h2]:text-zinc-950 [&>h2]:mt-10 [&>h2]:mb-4 [&>h2]:tracking-tight
+  [&>h3]:text-xl [&>h3]:font-bold [&>h3]:text-zinc-900 [&>h3]:mt-6 [&>h3]:mb-3
+  [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6 [&>ul]:space-y-2
+  [&>ul>li]:text-zinc-700
+  [&>strong]:text-zinc-950 [&>strong]:font-bold`;
+
+/**
+ * Yazıyı ortadaki ara başlıktan (h2) önce ikiye böler; yazı içi reklam araya girer (26.11.2026). Yazıların bütün
+ * ara başlıkları en üst düzeyde olduğu için bölünen parçalar geçerli HTML kalır. Üçten az ara başlık ya da 300'den
+ * az kelime varsa bölmez; kısa yazıda yalnızca yazı sonundaki reklam kalır.
+ */
+function ortadanBol(html: string): [string, string] | null {
+  const basliklar = [...html.matchAll(/<h2[\s>]/gi)].map((m) => m.index ?? 0).filter((i) => i > 0);
+  if (basliklar.length < 3) return null;
+  const kelime = html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+  if (kelime < 300) return null;
+  const kesme = basliklar[Math.floor(basliklar.length / 2)];
+  return [html.slice(0, kesme), html.slice(kesme)];
+}
+
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
   const { post, related: relatedPosts } = await getBlogPostBySlug(slug);
@@ -93,6 +116,8 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound();
   }
 
+  const yaziGovdesi = formatBlogContent(post.content);
+  const yaziParcalari = ortadanBol(yaziGovdesi);
   const yaziUrl = `${SITE_URL}/blog/${post.slug}`;
   const yaziJsonLd = {
     '@context': 'https://schema.org',
@@ -162,18 +187,17 @@ export default async function BlogPostPage({ params }: PageProps) {
         />
       </div>
 
-      {/* Makale Gövdesi */}
+      {/* Makale Gövdesi: yeterince uzun yazıda ortadaki ara başlıktan önce bir reklam (26.11.2026) */}
       <article className="bg-white p-6 sm:p-10 rounded-3xl border border-gray-100 shadow-xs">
-        <div
-          className="prose prose-zinc sm:prose-lg max-w-none text-zinc-700 leading-relaxed 
-                     [&>p]:mb-6 [&>p]:leading-relaxed
-                     [&>h2]:text-2xl [&>h2]:font-black [&>h2]:text-zinc-950 [&>h2]:mt-10 [&>h2]:mb-4 [&>h2]:tracking-tight
-                     [&>h3]:text-xl [&>h3]:font-bold [&>h3]:text-zinc-900 [&>h3]:mt-6 [&>h3]:mb-3
-                     [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:mb-6 [&>ul]:space-y-2
-                     [&>ul>li]:text-zinc-700
-                     [&>strong]:text-zinc-950 [&>strong]:font-bold"
-          dangerouslySetInnerHTML={{ __html: formatBlogContent(post.content) }}
-        />
+        {yaziParcalari ? (
+          <>
+            <div className={YAZI_SINIFI} dangerouslySetInnerHTML={{ __html: yaziParcalari[0] }} />
+            <ReklamAlani yer="blog-yazi-ici" className="my-8" />
+            <div className={YAZI_SINIFI} dangerouslySetInnerHTML={{ __html: yaziParcalari[1] }} />
+          </>
+        ) : (
+          <div className={YAZI_SINIFI} dangerouslySetInnerHTML={{ __html: yaziGovdesi }} />
+        )}
       </article>
 
       {ILGILI_SAYFALAR[post.slug] && (

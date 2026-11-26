@@ -7,8 +7,8 @@ import { CEREZ_TERCIHLERI_OLAYI, kayitliTercih, tercihiKaydet, useCerezTercihi }
 import { reklamCereziMi } from '../lib/reklam';
 
 /**
- * Çerez onayı (KVKK çerez rehberi): zorunlu çerezler her zaman çalışır; Google Analytics ve Google
- * AdSense reklamları yalnızca ziyaretçi onay verirse yüklenir. Tercih tarayıcıda saklanır ve alt bilgideki
+ * Çerez onayı (KVKK çerez rehberi): zorunlu çerezler her zaman çalışır; Google Analytics ve Yandex
+ * reklamları yalnızca ziyaretçi onay verirse yüklenir. Tercih tarayıcıda saklanır ve alt bilgideki
  * "Çerez tercihleri" bağlantısından istenildiği zaman değiştirilebilir.
  */
 
@@ -46,11 +46,6 @@ export default function CookieConsent() {
   const [ayarlarAcik, setAyarlarAcik] = useState(false);
   const [taslakAnaliz, setTaslakAnaliz] = useState(false);
   const [taslakReklam, setTaslakReklam] = useState(false);
-
-  // Yandex reklamları 22.11.2026'da kaldırıldı; daha önce onay vermiş ziyaretçide kalan Yandex çerezleri silinir.
-  useEffect(() => {
-    if (document.cookie.includes('_ym_')) cerezleriSil((ad) => ad.startsWith('_ym_'));
-  }, []);
 
   useEffect(() => {
     const ac = () => {
@@ -94,7 +89,7 @@ export default function CookieConsent() {
           </h2>
           <p id="cerez-metin" className="mt-2 text-sm leading-relaxed text-zinc-600">
             Sitenin çalışması için gerekli çerezleri her zaman kullanırız. Ziyaretleri ölçmek için Google Analytics,
-            reklam göstermek için Google AdSense çerezlerini ise yalnızca onay verirseniz kullanırız. Ayrıntılar{' '}
+            reklam göstermek için Yandex çerezlerini ise yalnızca onay verirseniz kullanırız. Ayrıntılar{' '}
             <Link href="/gizlilik-politikasi" className="font-semibold text-[#FF4D00] underline underline-offset-2">
               Gizlilik Politikası
             </Link>
@@ -183,7 +178,7 @@ export default function CookieConsent() {
               <label htmlFor="cerez-reklam" className="cursor-pointer">
                 <span className="block text-sm font-semibold text-zinc-900">Reklam çerezleri</span>
                 <span className="mt-0.5 block text-xs leading-relaxed text-zinc-500">
-                  Google AdSense, reklam göstermek ve ölçmek için çerez kullanır.
+                  Yandex Reklam Ağı, reklam göstermek ve ölçmek için çerez kullanır.
                 </span>
               </label>
               <input

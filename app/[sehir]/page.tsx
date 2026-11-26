@@ -16,6 +16,7 @@ import {
 import { SITE_URL, DEFAULT_OG_IMAGE, jsonLd } from '@/lib/site';
 import { getBusinessUrl } from '@/lib/utils';
 import { GezintiIzi, IsletmeIzgarasi, BaglantiCipleri, EkosistemBolumu, SehirYakinda } from '@/components/SehirSayfasi';
+import ReklamAlani from '@/components/ReklamAlani';
 
 // İl sayfası: açık illerde ilçe ve kategori sayfalarına giden ana sayfa, diğer illerde "yakında" sayfası.
 // Veri saatte bir yenilenir.
@@ -154,6 +155,9 @@ export default async function SehirSayfasi({ params }: PageProps) {
           <IsletmeIzgarasi isletmeler={secki} ilceAdlari={veri.ilceAdlari} kategoriAdlari={kategoriAdlari} />
         </section>
       )}
+
+      {/* Yandex reklamı (26.11.2026); "yakında" il sayfası bu bölüme gelmez, orada reklam yoktur. */}
+      <ReklamAlani yer="sehir-sayfasi" />
 
       {gezilecekYerVar && (
         <Link

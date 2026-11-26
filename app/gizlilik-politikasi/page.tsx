@@ -40,7 +40,7 @@ export default function PrivacyPage() {
             <li><strong>Konum Bilgisi:</strong> Size en yakın restoranları, popüler mekanları ve kültürel etkinlikleri gösterebilmemiz için konum seçiminize (şehir/ilçe) izin vermeniz halinde lokasyon verileriniz işlenir.</li>
             <li><strong>Çerezler (Cookies):</strong> Dil seçiminiz, konum tercihiniz ve tarayıcı oturumlarınızın stabil çalışması için temel çerezler kullanılır.</li>
             <li><strong>Kullanım Analitiği:</strong> Yalnızca çerez tercihlerinden onay vermeniz hâlinde, sitenin nasıl kullanıldığını anlamak için Google Analytics ile sayfa ziyaret istatistikleri toplanır.</li>
-            <li><strong>Reklam:</strong> Yalnızca çerez tercihlerinden onay vermeniz hâlinde, Google AdSense reklamları gösterilir. Ayrıntılar 4. bölümdedir.</li>
+            <li><strong>Reklam:</strong> Yalnızca çerez tercihlerinden onay vermeniz hâlinde, Yandex Reklam Ağı reklamları gösterilir. Ayrıntılar 4. bölümdedir.</li>
           </ul>
         </section>
 
@@ -52,27 +52,27 @@ export default function PrivacyPage() {
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-bold text-zinc-950 border-b border-gray-100 pb-2">4. Reklamlar (Google AdSense) ve Reklam Çerezleri</h2>
+          <h2 className="text-lg font-bold text-zinc-950 border-b border-gray-100 pb-2">4. Reklamlar (Yandex Reklam Ağı) ve Reklam Çerezleri</h2>
           <p>
-            Web sitemizde reklam göstermek için Google&apos;ın reklam hizmeti <strong>Google AdSense</strong>&apos;i kullanıyoruz. Bu kapsamda:
+            Web sitemizde reklam göstermek için Yandex&apos;in reklam hizmeti <strong>Yandex Reklam Ağı</strong>&apos;nı (Yandex Advertising Network) kullanıyoruz. Bu kapsamda:
           </p>
           <ul className="list-disc pl-5 space-y-2">
             <li>
-              Google dahil üçüncü taraf satıcılar, sitemize veya internetteki başka sitelere daha önce yaptığınız ziyaretlere dayanarak size reklam göstermek için çerez kullanır.
+              Yandex ve reklam iş ortakları, size ilginizi çekebilecek reklamlar göstermek, reklamların kaç kez gösterildiğini ve tıklandığını ölçmek ve aynı reklamın tekrar tekrar gösterilmesini sınırlamak için çerez ve benzeri tanımlayıcılar kullanır. Bunun için sitemize ve internetteki başka sitelere daha önce yaptığınız ziyaretlerden yararlanılabilir.
             </li>
             <li>
-              Google&apos;ın reklam çerezlerini kullanması, Google&apos;ın ve iş ortaklarının size sitemize ve/veya internetteki başka sitelere yaptığınız ziyaretlere dayanarak reklam göstermesini sağlar.
+              Yandex&apos;in bu bilgileri nasıl işlediği{' '}
+              <a href="https://yandex.com.tr/legal/confidential" target="_blank" rel="noopener noreferrer" className="text-[#FF4D00] font-semibold underline">Yandex Gizlilik Politikası</a>
+              &apos;nda anlatılır. Reklam çerezleriyle toplanan bilgiler Yandex&apos;in yurt dışındaki sunucularında işlenebilir.
             </li>
             <li>
-              Kişiselleştirilmiş reklamları <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-[#FF4D00] font-semibold underline">Google Reklam Ayarları</a> sayfasından kapatabilirsiniz. Üçüncü taraf satıcıların kişiselleştirilmiş reklam için çerez kullanmasını <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-[#FF4D00] font-semibold underline">www.aboutads.info</a> adresinden de kapatabilirsiniz.
+              İlgi alanınıza göre reklam gösterilmesini Yandex&apos;in reklam ayarlarından kapatabilirsiniz. Üçüncü taraf çerezlerini tarayıcınızın ayarlarından da engelleyebilir ya da silebilirsiniz.
             </li>
             <li>
-              Reklamlar, Google&apos;ın birlikte çalıştığı başka reklam teknolojisi sağlayıcıları aracılığıyla da gösterilebilir; bu sağlayıcılar da çerez kullanabilir. Google&apos;ın bu bilgileri nasıl kullandığı,{' '}
-              <a href="https://policies.google.com/technologies/partner-sites?hl=tr" target="_blank" rel="noopener noreferrer" className="text-[#FF4D00] font-semibold underline">Google&apos;ın iş ortağı sitelerinden gelen bilgileri nasıl kullandığı</a>{' '}
-              sayfasında anlatılır. Reklam çerezleriyle toplanan bilgiler Google&apos;ın yurt dışındaki sunucularında işlenebilir.
+              Reklamlar sayfada &ldquo;Reklam&rdquo; etiketiyle gösterilir. Reklamlar Menuland&apos;in önerisi değildir; reklamı veren işletmeyi ya da ürünü Menuland seçmez.
             </li>
             <li>
-              Reklam çerezleri yalnızca onay vermeniz hâlinde kullanılır. Onay vermezseniz Google&apos;ın reklam betiği sayfaya yüklenmez ve sitede reklam gösterilmez. Tercihinizi sayfanın altındaki <strong>Çerez Tercihleri</strong> bağlantısından istediğiniz zaman değiştirebilirsiniz.
+              Reklam çerezleri yalnızca onay vermeniz hâlinde kullanılır. Onay vermezseniz Yandex&apos;in reklam betiği sayfaya yüklenmez ve sitede reklam gösterilmez. Tercihinizi sayfanın altındaki <strong>Çerez Tercihleri</strong> bağlantısından istediğiniz zaman değiştirebilirsiniz.
             </li>
           </ul>
         </section>

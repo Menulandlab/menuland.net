@@ -3,13 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useCerezTercihi } from '../lib/cerezTercihi';
-import { ADSENSE_YAYINCI, REKLAM_BIRIMLERI, adsenseBetiginiYukle, type ReklamYeri } from '../lib/reklam';
-
-declare global {
-  interface Window {
-    adsbygoogle?: unknown[];
-  }
-}
+import { REKLAM_YERLERI, yandexReklaminiCiz, yeniKutuKimligi, type ReklamYeri, type YandexHata } from '../lib/reklam';
 
 interface ReklamAlaniProps {
   yer: ReklamYeri;
@@ -24,14 +18,13 @@ interface ReklamAlaniProps {
 }
 
 /**
- * Google AdSense reklam kutusu. Kutu yalnızca ziyaretçi reklam çerezlerine onay verdiyse ve bu yerin
- * AdSense'te bir reklam birimi numarası varsa çizilir; aksi hâlde sayfada hiç yer kaplamaz.
+ * Yandex reklam kutusu. Kutu yalnızca ziyaretçi reklam çerezlerine onay verdiyse çizilir; aksi hâlde sayfada hiç
+ * yer kaplamaz ve Yandex betiği yüklenmez. Yandex reklam bulamazsa ya da blok yüklenemezse kutu kaldırılır.
  * Sayfa değişince (aynı türden başka bir işletmeye geçince de) kutu yeniden kurulur ve yeni reklam istenir.
  */
 export default function ReklamAlani({ yer, className = '', yalnizGenisEkran = false }: ReklamAlaniProps) {
   const { tercih } = useCerezTercihi();
   const yol = usePathname();
-  const birim = REKLAM_BIRIMLERI[yer];
   const [genis, setGenis] = useState(false);
   useEffect(() => {
     if (!yalnizGenisEkran) return;
@@ -41,45 +34,63 @@ export default function ReklamAlani({ yer, className = '', yalnizGenisEkran = fa
     sorgu.addEventListener('change', guncelle);
     return () => sorgu.removeEventListener('change', guncelle);
   }, [yalnizGenisEkran]);
-  const gosterilir = tercih?.reklam === true && Boolean(birim) && (!yalnizGenisEkran || genis);
-  const kutu = useRef<HTMLModElement | null>(null);
+
+  if (tercih?.reklam !== true || (yalnizGenisEkran && !genis)) return null;
+  // Anahtar sayfa adresi: başka bir sayfaya geçilince kutu sıfırdan kurulur.
+  return <ReklamKutusu key={`${yol}-${yer}`} yer={yer} className={className} />;
+}
+
+type Durum = 'bekliyor' | 'dolu' | 'bos';
+
+function ReklamKutusu({ yer, className }: { yer: ReklamYeri; className: string }) {
+  const { blok, raporNo } = REKLAM_YERLERI[yer];
+  // Kimlik ilk çizimde bir kez üretilir ve kutu yaşadıkça değişmez.
+  const [kutuKimligi] = useState(() => yeniKutuKimligi(blok));
+  const [durum, setDurum] = useState<Durum>('bekliyor');
+  const [hataKodu, setHataKodu] = useState<string | null>(null);
+  const istendi = useRef(false);
 
   useEffect(() => {
-    if (!gosterilir) return;
-    adsenseBetiginiYukle();
-    const el = kutu.current;
-    // AdSense doldurduğu kutuya data-adsbygoogle-status yazar; aynı kutu için ikinci istek hata verir.
-    if (!el || el.getAttribute('data-adsbygoogle-status')) return;
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch {
-      // Kutu görünmezken (genişlik 0) AdSense hata fırlatır; sayfanın geri kalanı etkilenmez.
-    }
-  }, [gosterilir, yol]);
+    // Geliştirme kipinde React efektleri iki kez çalıştırır; aynı kutu için Yandex'ten ikinci reklam istenmez.
+    if (istendi.current) return;
+    istendi.current = true;
+    yandexReklaminiCiz(
+      { blok, kutuKimligi, raporNo },
+      {
+        reklamVar: () => setDurum('dolu'),
+        reklamYok: () => setDurum('bos'),
+        hata: (h: YandexHata) => {
+          // "warning" türü (ör. kutu o an görünmüyor) reklamı engellemez; yalnızca "error" kutuyu kaldırır.
+          if (h.type === 'error') {
+            setHataKodu(h.code || 'HATA');
+            setDurum('bos');
+          }
+        },
+      },
+    );
+  }, [blok, kutuKimligi, raporNo]);
 
-  if (!gosterilir) return null;
-
-  // Yerel denemede ve Vercel önizlemelerinde AdSense'ten deneme reklamı istenir; gösterim ve tıklama
-  // sayılmaz. Kutu yalnızca tarayıcıda çizildiği için (onay sunucuda bilinmez) window burada vardır.
+  // Yerel denemede ve önizleme adreslerinde Yandex "WRONG_DOMAIN" döner; kutunun yerini görebilmek için boş kutu
+  // burada kaldırılmaz, nedeniyle birlikte gösterilir. menuland.net'te boş kutu hiç görünmez.
   const deneme = typeof window !== 'undefined' && !/(^|\.)menuland\.net$/.test(window.location.hostname);
+  if (durum === 'bos' && !deneme) return null;
 
   return (
     <aside
       aria-label="Reklam"
+      data-reklam-yeri={yer}
+      data-reklam-durumu={durum}
       className={`flex w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-zinc-50/50 p-3 ${className}`}
     >
       <span className="mb-2 px-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Reklam</span>
-      <ins
-        key={yol}
-        ref={kutu}
-        className="adsbygoogle"
-        style={{ display: 'block', width: '100%' }}
-        data-ad-client={ADSENSE_YAYINCI}
-        data-ad-slot={birim}
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-        {...(deneme ? { 'data-adtest': 'on' } : {})}
-      />
+      {durum === 'bos' ? (
+        <p className="px-1 py-6 text-center text-xs text-zinc-400">
+          {`Deneme: Yandex bu adreste reklam vermedi${hataKodu ? ` (${hataKodu})` : ''}.`}
+        </p>
+      ) : (
+        // Yandex en az 160 × 50 piksellik kutu istiyor; yükseklik reklam gelene kadar yer tutar.
+        <div id={kutuKimligi} className="block min-h-[100px] w-full overflow-hidden text-center" />
+      )}
     </aside>
   );
 }

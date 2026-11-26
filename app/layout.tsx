@@ -42,7 +42,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
   },
-  // Google AdSense site doğrulaması (meta etiketi yöntemi). Çerez kullanmaz; reklam betiği yalnızca
+  // Google AdSense site doğrulaması (meta etiketi yöntemi): ileride yeniden başvurmak için duruyor, çerez
+  // kullanmaz ve AdSense betiği yüklenmez. Reklamlar 26.11.2026'dan beri Yandex'ten gelir ve betik yalnızca
   // ziyaretçi reklam çerezlerine onay verirse yüklenir (components/ReklamAlani.tsx).
   other: {
     "google-adsense-account": ADSENSE_YAYINCI,
