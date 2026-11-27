@@ -193,6 +193,9 @@ function LoginForm() {
             <label className="text-xs font-bold text-zinc-650" htmlFor="password">
               Şifre
             </label>
+            <Link href="/sifremi-unuttum" className="text-[11px] font-bold text-[#D63F00] hover:underline">
+              Şifremi unuttum
+            </Link>
           </div>
           <div className="relative">
             <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">

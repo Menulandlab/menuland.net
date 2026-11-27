@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/profil', '/rezervasyonlarim', '/actions/'],
+        disallow: ['/profil', '/rezervasyonlarim', '/actions/', '/sifre-yenile'],
       },
       // SEO araçlarının tarayıcıları (Ahrefs, Semrush, Majestic, Moz ve benzerleri) siteye ziyaretçi getirmiyor ama her
       // sayfayı tarayıp sunucu süresi harcıyor; bunlara site kapalı. Google, Bing, Yandex ve yapay zekâ arama botları
