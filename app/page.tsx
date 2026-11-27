@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { Search, Star, MapPin, Utensils, Compass, BookOpen, ArrowRight } from 'lucide-react';
 import { getBusinessUrl, getCategoryUrl, puanMetni } from '../lib/utils';
-import { blogPosts } from '@/src/data/blog-posts';
+import { sonBlogYazilari } from '@/lib/anaSayfaBlog';
 import type { Metadata } from 'next';
 import { SITE_URL, APP_STORE_URL, GOOGLE_PLAY_URL, KURUMSAL_URL, jsonLd } from '@/lib/site';
 
@@ -59,10 +59,11 @@ export default async function Home() {
   if (districtId) businessParams.district_id = districtId;
 
   // Kategorileri ve seçili konuma özel işletmeleri sunucuda paralel olarak çek
-  const [categories, businesses, sehirler] = await Promise.all([
+  const [categories, businesses, sehirler, blogYazilari] = await Promise.all([
     getBusinessListingCategories().catch(() => []),
     getBusinesses(businessParams).catch(() => []),
     acikSehirler().catch(() => []),
+    sonBlogYazilari(3),
   ]);
 
   return (
@@ -242,7 +243,7 @@ export default async function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {blogPosts.slice(0, 3).map((post) => (
+          {blogYazilari.map((post) => (
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
